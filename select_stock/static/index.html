@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A股智能选股</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  background: #f5f6f8; color: #333; min-height: 100vh;
+}
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* 头部 */
+.header { text-align: center; padding: 24px 0 16px; }
+.header h1 { font-size: 24px; color: #1a1a2e; }
+.header p { color: #888; font-size: 13px; margin-top: 4px; }
+
+/* 卡片 */
+.card {
+  background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  padding: 20px; margin-bottom: 16px;
+}
+.card-title { font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 14px; }
+
+/* 输入区 */
+.input-row { display: flex; gap: 10px; align-items: center; }
+.input-row input { flex: 1; height: 40px; border: 1px solid #ddd; border-radius: 8px; padding: 0 14px; font-size: 14px; outline: none; transition: border-color .2s; }
+.input-row input:focus { border-color: #4a90d9; }
+.btn {
+  height: 40px; padding: 0 22px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;
+  font-weight: 500; transition: all .2s; white-space: nowrap;
+}
+.btn-primary { background: #4a90d9; color: #fff; }
+.btn-primary:hover { background: #3a7bc8; }
+.btn-primary:disabled { background: #a0c4e8; cursor: not-allowed; }
+.btn-success { background: #27ae60; color: #fff; }
+.btn-success:hover { background: #219a52; }
+.btn-success:disabled { background: #8fd4a8; cursor: not-allowed; }
+.btn-outline { background: #fff; color: #4a90d9; border: 1px solid #4a90d9; }
+.btn-outline:hover { background: #eef5fc; }
+
+/* 提示 */
+.hint { color: #888; font-size: 13px; margin-top: 8px; }
+
+/* 表格 */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f8f9fb; text-align: left; padding: 10px 12px; font-weight: 600; color: #555; border-bottom: 2px solid #eee; white-space: nowrap; position: sticky; top: 0; }
+td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+tr:hover td { background: #fafbfc; }
+.pct-up { color: #e74c3c; }
+.pct-down { color: #27ae60; }
+.pct-zero { color: #999; }
+
+/* 过滤区 */
+.filter-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.filter-row label { font-size: 13px; color: #666; white-space: nowrap; }
+.filter-row select, .filter-row input {
+  height: 36px; border: 1px solid #ddd; border-radius: 6px; padding: 0 10px; font-size: 13px; outline: none;
+}
+.filter-row select:focus, .filter-row input:focus { border-color: #4a90d9; }
+.filter-row select { min-width: 100px; }
+.filter-row input[type="number"] { width: 100px; }
+
+/* 日志框 */
+.log-box {
+  height: 320px; overflow-y: auto; background: #1e1e2e; border-radius: 8px; padding: 14px;
+  font-family: "Consolas", "Courier New", monospace; font-size: 12px; line-height: 1.7;
+}
+.log-line { padding: 2px 0; }
+.log-info { color: #a0a0b0; }
+.log-pass { color: #f07178; }
+.log-fail { color: #7ec87e; }
+.log-warn { color: #e2b96f; }
+.log-error { color: #ff5555; }
+
+/* 统计条 */
+.stats { display: flex; gap: 20px; margin-bottom: 12px; font-size: 13px; }
+.stats .stat-item { display: flex; align-items: center; gap: 6px; }
+.stat-num { font-weight: 700; font-size: 16px; }
+.stat-pass { color: #e74c3c; }
+.stat-fail { color: #27ae60; }
+.stat-total { color: #4a90d9; }
+
+/* 加载 */
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #4a90d9; border-radius: 50%; animation: spin .6s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: #888; font-size: 13px; padding: 20px; text-align: center; }
+.empty-text { color: #aaa; font-size: 13px; padding: 30px; text-align: center; }
+
+/* 分页器 */
+.pager { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.pager-info { color: #888; font-size: 13px; }
+.pager-btns { display: flex; align-items: center; gap: 8px; }
+.pager-txt { font-size: 13px; color: #666; }
+.pager-jump { font-size: 13px; color: #888; display: flex; align-items: center; gap: 6px; }
+.pager-jump input { width: 56px; height: 30px; border: 1px solid #ddd; border-radius: 6px; text-align: center; font-size: 13px; outline: none; }
+.pager-jump input:focus { border-color: #4a90d9; }
+.btn-page { height: 30px; padding: 0 12px; border: 1px solid #ddd; background: #fff; border-radius: 6px; font-size: 13px; cursor: pointer; color: #555; transition: all .2s; }
+.btn-page:hover:not(:disabled) { border-color: #4a90d9; color: #4a90d9; }
+.btn-page:disabled { opacity: .4; cursor: not-allowed; }
+tbody tr.clickable { cursor: pointer; }
+tbody tr.clickable:hover td { background: #f0f7ff; }
+
+/* ---------- K线弹窗(深色) ---------- */
+.mask { position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.mask.show { display: flex; }
+.kmodal { background: #14161c; border: 1px solid #e8c24a; border-radius: 10px; width: 97vw; height: 94vh; max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; padding: 14px 16px; box-shadow: 0 8px 40px rgba(0,0,0,.6); color: #d8dce3; font: 13px/1.5 "Microsoft YaHei","PingFang SC",sans-serif; }
+.kmodal.m-small { width: min(960px,94vw); height: auto; display: block; }
+.m-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.m-head .sp { flex: 1; }
+.m-head .nm { font-size: 18px; font-weight: 700; }
+.m-head .cd { color: #8b93a1; font-size: 12px; }
+.m-head .pr { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.m-head .close { margin-left: auto; background: #232832; border: 1px solid #2e3440; color: #d8dce3; border-radius: 6px; cursor: pointer; padding: 2px 10px; font-size: 14px; }
+.m-head .close:hover { border-color: #e23d3d; color: #e23d3d; }
+.up { color: #e23d3d; } .down { color: #0b9d39; } .flat { color: #8b93a1; }
+.m-quote { display: flex; gap: 4px 18px; flex-wrap: wrap; margin: 8px 0; font-size: 12px; color: #8b93a1; }
+.m-quote b { color: #d8dce3; font-weight: 500; font-variant-numeric: tabular-nums; }
+.m-period { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+.m-period .lbl { color: #8b93a1; font-size: 12px; }
+.kmodal .btn { background: #232832; color: #d8dce3; border: 1px solid #2e3440; border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+.kmodal .btn:hover { border-color: #e8c24a; color: #e8c24a; }
+.kmodal .btn.on, .kmodal .chip-toggle.on { border-color: #e8c24a; color: #e8c24a; background: rgba(232,194,74,.08); }
+.k-flex { flex: 1; min-height: 0; display: flex; gap: 10px; align-items: stretch; margin-top: 6px; }
+.k-flex #kChart { flex: 1; min-width: 0; height: 100%; }
+#kChart { width: 100%; height: min(560px,52vh); }
+#mChart { height: min(500px,60vh); }
+.mask .loading { color: #8b93a1; text-align: center; padding: 40px; }
+.mask .empty { color: #8b93a1; text-align: center; padding: 34px; }
+.mask .error { color: #e23d3d; text-align: center; padding: 24px; }
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .filter-row { flex-direction: column; align-items: flex-start; }
+  .input-row { flex-direction: column; }
+  .input-row .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    <h1>📊 A股智能选股</h1>
+    <p>东方财富智能选股 + 历史跌幅二次过滤</p>
+  </div>
+
+  <!-- 第一轮：条件选股 -->
+  <div class="card">
+    <div class="card-title">第一步：条件选股</div>
+    <div class="input-row">
+      <input type="text" id="xuanguInput" value="MACD金叉 非ST" placeholder="输入选股条件, 如: MACD金叉 非ST">
+      <button class="btn btn-primary" id="xuanguBtn" onclick="doXuangu()">🔍 查询</button>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:13px;color:#666;white-space:nowrap;">每页</span>
+        <select id="xgPageSize" onchange="xgPageSizeChange()" style="height:40px;padding:0 8px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none;">
+          <option value="20">20</option>
+          <option value="60" selected>60</option>
+          <option value="100">100</option>
+          <option value="150">150</option>
+          <option value="200">200</option>
+        </select>
+        <span style="font-size:13px;color:#666;white-space:nowrap;">条</span>
+      </span>
+    </div>
+    <div class="hint" id="xuanguHint"></div>
+    <div class="tbl-wrap" id="xuanguTable" style="margin-top:12px;"></div>
+    <div class="pager" id="xgPager" style="display:none;">
+      <span class="pager-info" id="xgInfo"></span>
+      <div class="pager-btns">
+        <button class="btn-page" id="xgPrev" onclick="xgPage(-1)">‹ 上一页</button>
+        <span class="pager-txt" id="xgPageTxt">1 / 1</span>
+        <button class="btn-page" id="xgNext" onclick="xgPage(1)">下一页 ›</button>
+        <span class="pager-jump">第 <input id="xgJump" type="number" min="1" value="1"> 页 <button class="btn-page" onclick="xgJumpTo()">跳转</button></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第二轮：跌幅过滤 -->
+  <div class="card">
+    <div class="card-title">第二步：历史跌幅过滤</div>
+    <div class="filter-row">
+      <label>月份范围</label>
+      <select id="filterMonths">
+        <option value="1">1个月</option>
+        <option value="2">2个月</option>
+        <option value="3" selected>3个月</option>
+        <option value="6">6个月</option>
+        <option value="12">12个月</option>
+      </select>
+      <label>跌幅阈值</label>
+      <input type="number" id="filterDropPct" value="-30" step="1">
+      <span style="font-size:13px;color:#888;">%</span>
+      <label>对比方式</label>
+      <select id="filterMode">
+        <option value="至今" selected>至今</option>
+        <option value="最低">最低</option>
+      </select>
+      <button class="btn btn-success" id="filterBtn" onclick="doFilter()" disabled>🎯 开始过滤</button>
+      <span class="hint" id="filterScope"></span>
+    </div>
+    <div class="stats" id="filterStats" style="display:none; margin-top: 14px;"></div>
+    <div class="tbl-wrap" id="filterTable" style="margin-top: 8px;"></div>
+  </div>
+
+  <!-- 日志 -->
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>📋 过滤日志</span>
+      <button class="btn btn-outline" style="height:28px;padding:0 12px;font-size:12px;" onclick="clearLog()">清空</button>
+    </div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+</div>
+
+<!-- K线弹窗(日K/周K/月K + MACD + 筹码峰) -->
+<div class="mask" id="kMask" onclick="if(event.target===this)closeKline()">
+  <div class="kmodal">
+    <div class="m-head">
+      <span class="nm" id="kName">--</span>
+      <span class="cd" id="kCode">--</span>
+      <span class="pr flat" id="kPrice">--</span>
+      <span class="pr flat" id="kPct">--</span>
+      <span class="sp"></span>
+      <button class="btn mini chip-toggle" id="kChipBtn" onclick="toggleChips()" title="显示筹码分布">筹码</button>
+      <button class="close" onclick="closeKline()">✕</button>
+    </div>
+    <div class="m-quote" id="kQuote"></div>
+    <div class="m-period" id="kPeriod"></div>
+    <div class="k-flex">
+      <div id="kChart"><div class="loading">加载中...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 分时图弹窗(双击日K打开) -->
+<div class="mask" id="mMask" onclick="if(event.target===this)closeMinute()">
+  <div class="kmodal m-small">
+    <div class="m-head">
+      <span class="nm" id="mName">--</span>
+      <span class="cd" id="mDate">--</span>
+      <span class="sp"></span>
+      <button class="close" onclick="closeMinute()">✕</button>
+    </div>
+    <div id="mChart"><div class="loading">加载中...</div></div>
+  </div>
+</div>
+
+<script src="static/jquery.min.js"></script>
+<script src="static/echarts.min.js"></script>
+<script src="static/js/utils.js"></script>
+<script src="static/js/kline.js"></script>
+<script>
+// ---------------- 全局状态 ----------------
+const XG_PAGE_SIZE_DEFAULT = 60;   // 选股列表每页条数(默认60, 下拉框可选, 最大200)
+let xgState = { q: "", page: 1, pages: 1, total: 0, rows: [] };  // 第一轮查询结果(分页)
+let filterResults = [];  // 过滤结果全量(用于按"通过/未通过"二次筛选)
+
+function xgSize() {
+  const v = parseInt(document.getElementById("xgPageSize").value);
+  return isNaN(v) ? XG_PAGE_SIZE_DEFAULT : v;
+}
+
+function xgPageSizeChange() {
+  // 切换每页条数: 已有查询结果时回到第1页重新查询
+  if (xgState.q) doXuangu(1);
+}
+
+// ---------------- 第一轮: 条件选股 ----------------
+async function doXuangu(page) {
+  const q = document.getElementById("xuanguInput").value.trim();
+  if (!q) { alert("请输入选股条件"); return; }
+
+  const btn = document.getElementById("xuanguBtn");
+  const hint = document.getElementById("xuanguHint");
+  const tbl = document.getElementById("xuanguTable");
+  const filterBtn = document.getElementById("filterBtn");
+
+  btn.disabled = true;
+  btn.textContent = "查询中...";
+  hint.textContent = "";
+  tbl.innerHTML = '<div class="loading-text"><span class="spinner"></span>正在查询东财智能选股...</div>';
+  document.getElementById("xgPager").style.display = "none";
+  document.getElementById("filterScope").textContent = "";
+  filterBtn.disabled = true;
+  document.getElementById("filterTable").innerHTML = "";
+  document.getElementById("filterStats").style.display = "none";
+
+  try {
+    const resp = await fetch("/api/xuangu", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ q, size: xgSize(), page: page || 1 }),
+    });
+    const data = await resp.json();
+    xgState = {
+      q: q,
+      page: data.page || 1,
+      pages: data.pages || 1,
+      total: data.total || 0,
+      rows: data.rows || [],
+    };
+    hint.textContent = data.msg || "";
+
+    if (!xgState.rows.length) {
+      tbl.innerHTML = '<div class="empty-text">未匹配到股票, 换个条件试试</div>';
+      return;
+    }
+
+    renderXuanguTable(xgState.rows);
+    renderXgPager();
+    document.getElementById("filterScope").textContent =
+      "过滤范围: 第 " + xgState.page + " 页 · " + xgState.rows.length + " 只";
+    filterBtn.disabled = false;
+    // 后台预热当前页K线, 点"开始过滤"时直接命中缓存(秒级完成)
+    fetch("/api/warmup?codes=" + encodeURIComponent(
+      xgState.rows.map(r => r.code).join(",")));
+  } catch (e) {
+    tbl.innerHTML = '<div class="empty-text" style="color:#e74c3c;">查询失败: ' + e.message + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔍 查询";
+  }
+}
+
+function renderXgPager() {
+  const pager = document.getElementById("xgPager");
+  if (xgState.total <= xgState.rows.length && xgState.pages <= 1) {
+    pager.style.display = "none";
+    return;
+  }
+  pager.style.display = "flex";
+  document.getElementById("xgInfo").textContent =
+    "共 " + xgState.total + " 只 · 第 " + xgState.page + "/" + xgState.pages + " 页";
+  document.getElementById("xgPageTxt").textContent = xgState.page + " / " + xgState.pages;
+  document.getElementById("xgJump").value = xgState.page;
+  document.getElementById("xgPrev").disabled = xgState.page <= 1;
+  document.getElementById("xgNext").disabled = xgState.page >= xgState.pages;
+}
+
+function xgPage(delta) {
+  const target = xgState.page + delta;
+  if (target < 1 || target > xgState.pages) return;
+  doXuangu(target);
+}
+
+function xgJumpTo() {
+  const v = parseInt(document.getElementById("xgJump").value);
+  if (!v || isNaN(v) || v < 1 || v > xgState.pages) {
+    alert("页码超出范围(1-" + xgState.pages + ")");
+    return;
+  }
+  doXuangu(v);
+}
+
+function renderXuanguTable(rows) {
+  const cols = [
+    { key: "code", label: "代码" },
+    { key: "name", label: "名称" },
+    { key: "price", label: "最新价" },
+    { key: "pct", label: "涨跌幅", isPct: true },
+    { key: "turnover", label: "换手率" },
+    { key: "qrr", label: "量比" },
+    { key: "amount", label: "成交额" },
+    { key: "pe", label: "市盈率" },
+    { key: "total_value", label: "总市值" },
+    { key: "float_value", label: "流通市值" },
+  ];
+
+  let html = "<table><thead><tr>";
+  html += "<th>#</th>";
+  for (const c of cols) html += "<th>" + c.label + "</th>";
+  html += "</tr></thead><tbody>";
+
+  rows.forEach((r, i) => {
+    html += '<tr class="clickable"><td>' + (i + 1) + "</td>";
+    for (const c of cols) {
+      const v = r[c.key];
+      if (c.isPct) {
+        html += "<td class='" + pctClass(v) + "'>" + fmtVal(v) + "</td>";
+      } else {
+        html += "<td>" + fmtVal(v) + "</td>";
+      }
+    }
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
+  const wrap = document.getElementById("xuanguTable");
+  wrap.innerHTML = html;
+  // 行点击 -> 打开K线弹窗(日K + MACD + 筹码峰)
+  wrap.querySelectorAll("tbody tr").forEach((tr, i) => {
+    tr.addEventListener("click", () => {
+      const r = rows[i];
+      if (r) openKline(r.code, r.name);
+    });
+  });
+}
+
+// ---------------- 第二轮: 跌幅过滤 ----------------
+async function doFilter() {
+  if (!xgState.q || !xgState.rows.length) {
+    alert("请先执行条件选股");
+    return;
+  }
+
+  const months = parseInt(document.getElementById("filterMonths").value);
+  const dropPct = parseFloat(document.getElementById("filterDropPct").value);
+  const mode = document.getElementById("filterMode").value;
+
+  // 直接过滤当前页股票(第 xgState.page 页的 xgState.rows)
+  const curRows = xgState.rows;
+  const codes = curRows.map(r => r.code).join(",");
+
+  const btn = document.getElementById("filterBtn");
+  btn.disabled = true;
+  btn.textContent = "过滤中...";
+  document.getElementById("filterTable").innerHTML = "";
+  document.getElementById("filterStats").style.display = "none";
+  clearLog();
+  appendLog({ type: "info", text: "开始过滤当前页(第 " + xgState.page + " 页) " + curRows.length + " 只股票..." });
+
+  try {
+    const resp = await fetch("/api/filter?codes=" + encodeURIComponent(codes) +
+      "&months=" + months + "&drop_pct=" + dropPct + "&mode=" + encodeURIComponent(mode));
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+    filterResults = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split("\n\n");
+      buf = lines.pop() || "";
+
+      for (const line of lines) {
+        const s = line.trim();
+        if (!s.startsWith("data: ")) continue;
+        const raw = s.slice(6);
+        if (!raw) continue;
+        try {
+          const item = JSON.parse(raw);
+          if (item.type === "done") {
+            filterResults = item.results || [];
+          } else {
+            appendLog(item);
+          }
+        } catch (e) {}
+      }
+    }
+
+    // 合并名称
+    const nameMap = {};
+    for (const r of curRows) nameMap[r.code] = r.name;
+    for (const r of filterResults) r.name = nameMap[r.code] || "";
+
+    renderFilterTable(filterResults);
+    renderFilterStats(filterResults);
+  } catch (e) {
+    appendLog({ type: "error", text: "过滤请求失败: " + e.message });
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🎯 开始过滤";
+  }
+}
+
+function renderFilterTable(rows) {
+  // 按"全部/通过/未通过"筛选
+  const sel = document.getElementById("filterPassFilter");
+  if (sel) {
+    const v = sel.value;
+    if (v === "pass") rows = rows.filter(r => r.pass);
+    else if (v === "fail") rows = rows.filter(r => !r.pass);
+  }
+
+  if (rows.length === 0) {
+    document.getElementById("filterTable").innerHTML = '<div class="empty-text">无过滤结果</div>';
+    return;
+  }
+
+  const cols = [
+    { key: "code", label: "代码" },
+    { key: "name", label: "名称" },
+    { key: "high", label: "最高价" },
+    { key: "today", label: "今日价" },
+    { key: "low", label: "最低价" },
+    { key: "drop_pct", label: "实际跌幅", isPct: true },
+    { key: "pass", label: "结果", isPass: true },
+  ];
+
+  let html = "<table><thead><tr><th>#</th>";
+  for (const c of cols) html += "<th>" + c.label + "</th>";
+  html += "</tr></thead><tbody>";
+
+  rows.forEach((r, i) => {
+    const style = r.pass ? "color:#e74c3c;font-weight:600;" : "color:#27ae60;";
+    html += "<tr class='clickable' style='" + style + "'>";
+    html += "<td>" + (i + 1) + "</td>";
+    for (const c of cols) {
+      const v = r[c.key];
+      if (c.isPct) {
+        html += "<td>" + (v != null ? v.toFixed(2) + "%" : "-") + "</td>";
+      } else if (c.isPass) {
+        html += "<td>" + (r.pass ? "✅ 通过" : "❌ 未通过") + "</td>";
+      } else {
+        html += "<td>" + fmtVal(v) + "</td>";
+      }
+    }
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
+  const wrap = document.getElementById("filterTable");
+  wrap.innerHTML = html;
+  // 行点击 -> 打开K线弹窗
+  wrap.querySelectorAll("tbody tr").forEach((tr, i) => {
+    tr.addEventListener("click", () => {
+      const r = rows[i];
+      if (r && r.code) openKline(r.code, r.name);
+    });
+  });
+}
+
+function renderFilterStats(rows) {
+  const total = rows.length;
+  const passed = rows.filter(r => r.pass).length;
+  const failed = total - passed;
+  document.getElementById("filterStats").style.display = "flex";
+  document.getElementById("filterStats").innerHTML =
+    '<div class="stat-item">总数: <span class="stat-num stat-total">' + total + '</span></div>' +
+    '<div class="stat-item">通过: <span class="stat-num stat-pass">' + passed + '</span></div>' +
+    '<div class="stat-item">未通过: <span class="stat-num stat-fail">' + failed + '</span></div>' +
+    '<div class="stat-item" style="margin-left:auto;">' +
+    '<span style="font-size:13px;color:#666;margin-right:4px;">筛选</span>' +
+    '<select id="filterPassFilter" onchange="renderFilterTable(filterResults)" style="height:28px;padding:0 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none;">' +
+    '<option value="all" selected>全部</option>' +
+    '<option value="pass">通过</option>' +
+    '<option value="fail">未通过</option>' +
+    '</select></div>';
+}
+
+// ---------------- 日志 ----------------
+function appendLog(item) {
+  const box = document.getElementById("logBox");
+  const cls = "log-" + (item.type || "info");
+  const div = document.createElement("div");
+  div.className = "log-line " + cls;
+  div.textContent = item.text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById("logBox").innerHTML = "";
+}
+
+// ---------------- 工具函数 ----------------
+function fmtVal(v) {
+  if (v == null || v === "" || v === "-") return "-";
+  return String(v);
+}
+
+function pctClass(v) {
+  if (v == null || v === "" || v === "-") return "pct-zero";
+  const n = parseFloat(v);
+  if (isNaN(n)) return "pct-zero";
+  if (n > 0) return "pct-up";
+  if (n < 0) return "pct-down";
+  return "pct-zero";
+}
+
+// ---------------- 初始化 ----------------
+document.getElementById("xuanguInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") doXuangu();
+});
+</script>
+</body>
+</html>

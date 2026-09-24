@@ -1,0 +1,10 @@
+[project]
+name = "select-stock"
+version = "0.1.0"
+description = "A股智能选股 - 东财智能选股 + 历史跌幅二次过滤"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.141.1",
+    "requests>=2.34.2",
+    "uvicorn>=0.52.4",
+]
