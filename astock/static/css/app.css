@@ -1,0 +1,306 @@
+/* A股复盘看盘 - 深色主题自定义样式
+ * 加载顺序: bootstrap.min.css -> bootstrap-icons.min.css -> app.css(本文件覆盖主题)
+ */
+:root{
+  --bg:#14161c; --panel:#1d2129; --panel2:#232832; --line:#2e3440;
+  --text:#d8dce3; --dim:#8b93a1; --red:#e23d3d; --green:#0b9d39;
+  --yellow:#e8c24a; --blue:#4093e6; --pink:#f584e3;
+  /* 对齐 Bootstrap 深色变量 */
+  --bs-body-bg:var(--bg); --bs-body-color:var(--text);
+  --bs-border-color:var(--line); --bs-secondary-color:var(--dim);
+  --bs-emphasis-color:#fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:13px/1.5 "Microsoft YaHei","PingFang SC",sans-serif;min-height:100vh}
+a{color:var(--blue);text-decoration:none}
+
+/* 数字等宽对齐 */
+.tbl-wrap table{font-variant-numeric:tabular-nums}
+
+/* 滚动条 */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--panel)}
+::-webkit-scrollbar-thumb{background:#3a4150;border-radius:5px;border:2px solid var(--panel)}
+::-webkit-scrollbar-thumb:hover{background:#4a5260}
+
+/* ---------- 顶栏 ---------- */
+header{position:sticky;top:0;z-index:50;background:#0f1116;border-bottom:1px solid var(--line);
+  padding:8px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header .logo{font-size:17px;font-weight:700;color:var(--yellow);display:flex;align-items:center;gap:7px}
+header .logo i{color:var(--yellow)}
+header .clock{color:var(--dim);font-size:12px;font-variant-numeric:tabular-nums}
+header .status{padding:3px 10px;border-radius:20px;font-size:12px;background:#2a2f3a;color:var(--dim)}
+header .status.open{background:#12321c;color:#4cd97a}
+header .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:12px;color:var(--dim)}
+header .right .form-check{display:flex;align-items:center;gap:5px;font-size:12px}
+header .right .form-check-input{background-color:var(--panel2);border-color:var(--line)}
+header .right .form-check-input:checked{background-color:var(--yellow);border-color:var(--yellow)}
+header .right .form-select{width:auto;background-color:var(--panel2);color:var(--text);border-color:var(--line);
+  font-size:12px;padding:3px 26px 3px 10px}
+
+/* ---------- Tab 导航 ---------- */
+nav.tabs{display:flex;gap:4px;padding:10px 14px 0;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--bg)}
+nav.tabs button{background:transparent;border:1px solid transparent;color:var(--dim);
+  padding:8px 14px;cursor:pointer;border-radius:8px 8px 0 0;font-size:13px;display:flex;align-items:center;gap:6px;
+  transition:color .15s,background .15s,border-color .15s}
+nav.tabs button i{font-size:14px}
+nav.tabs button:hover{color:#fff}
+nav.tabs button.active{background:var(--panel);border-color:var(--line);border-bottom-color:var(--panel);
+  color:var(--yellow);font-weight:700;margin-bottom:-1px}
+
+main{padding:14px;max-width:1800px;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block;animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+/* ---------- 卡片/统计 ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px;margin-bottom:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;
+  transition:border-color .15s,transform .15s}
+.card:hover{border-color:#3d4656;transform:translateY(-1px)}
+.card .nm{color:var(--dim);font-size:12px}
+.card .pr{font-size:21px;font-weight:700;margin:2px 0;font-variant-numeric:tabular-nums}
+.card .ch{font-size:12px;font-variant-numeric:tabular-nums}
+.up{color:var(--red)} .down{color:var(--green)} .flat{color:var(--dim)}
+
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:13px}
+.stats .item{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 16px}
+.stats .item b{font-size:16px;font-variant-numeric:tabular-nums}
+.stats .item .dim{font-size:12px}
+
+.feed{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:12px;max-height:150px;overflow-y:auto}
+.feed .f{color:var(--dim);border-bottom:1px dashed var(--line);padding:4px 0;cursor:pointer}
+.feed .f:last-child{border-bottom:none}
+.feed .f b{color:var(--yellow);font-weight:400}
+
+/* ---------- 表格 ---------- */
+.tbl-wrap{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:auto;max-height:calc(100vh - 280px)}
+table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12.5px}
+thead th{position:sticky;top:0;background:var(--panel2);color:var(--dim);font-weight:600;
+  padding:8px 12px;text-align:right;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;z-index:2}
+thead th:first-child,td:first-child{text-align:left}
+thead th.sorted{color:var(--yellow)}
+tbody tr{cursor:pointer}
+tbody td{padding:6px 12px;text-align:right;border-bottom:1px solid #22262e;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:#252b36}
+td.dim{color:var(--dim)}
+td .tag{display:inline-block;background:#2a2f3a;color:var(--dim);border-radius:4px;padding:0 6px;margin-left:4px;font-size:11px}
+td .tag.hot{background:#3a2f14;color:var(--yellow)}
+
+/* ---------- 工具条 ---------- */
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.toolbar select{background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:6px;padding:5px 8px;font-size:12.5px}
+.toolbar input.cal-in{background:var(--panel2);color:var(--yellow);border:1px solid var(--line);
+  border-radius:6px;padding:5px 8px;font-size:12.5px;cursor:pointer;width:100px;text-align:center;font-weight:600}
+.toolbar input.cal-in:hover{border-color:var(--yellow)}
+.toolbar .hint{color:var(--dim);font-size:12px}
+
+/* ---------- 自选搜索框 + 联想下拉 ---------- */
+.search-wrap{position:relative;display:flex;align-items:center;min-width:320px;max-width:520px;flex:1}
+.search-wrap>i{position:absolute;left:10px;color:var(--dim);font-size:13px;pointer-events:none}
+.search-wrap input{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:8px;padding:7px 10px 7px 30px;font-size:13px;outline:none;
+  transition:border-color .15s,box-shadow .15s}
+.search-wrap input:focus{border-color:var(--yellow);box-shadow:0 0 0 2px rgba(232,194,74,.15)}
+.search-wrap input::placeholder{color:#5a6270}
+.search-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:60;display:none;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;max-height:320px;overflow-y:auto;
+  box-shadow:0 10px 32px rgba(0,0,0,.55)}
+.search-drop.show{display:block}
+.s-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;font-size:13px;
+  border-bottom:1px solid #22262e}
+.s-item:last-child{border-bottom:none}
+.s-item:hover,.s-item.sel{background:var(--panel2)}
+.s-item .s-name{font-weight:600;color:var(--text)}
+.s-item .s-py{color:var(--dim);font-size:11px;letter-spacing:1px}
+.s-item .s-code{margin-left:auto;color:var(--dim);font-variant-numeric:tabular-nums}
+.s-empty{padding:14px;text-align:center;color:var(--dim);font-size:12.5px}
+button.btn.del{padding:2px 8px;font-size:12px}
+button.btn.del:hover{border-color:var(--red);color:var(--red)}
+button.btn.del i{pointer-events:none}
+
+/* ---------- 按钮(Bootstrap 基础 + 主题覆盖) ---------- */
+button.btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;
+  padding:5px 12px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:5px;
+  transition:color .15s,border-color .15s,background .15s}
+button.btn:hover{border-color:var(--yellow);color:var(--yellow);background:var(--panel2)}
+button.btn.mini{padding:3px 10px;font-size:12px}
+button.btn.on{border-color:var(--yellow);color:var(--yellow);background:rgba(232,194,74,.08)}
+button.btn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line);color:var(--dim)}
+
+/* ---------- 连板梯队 ---------- */
+.ladder{display:flex;gap:10px;flex-wrap:wrap}
+.ladder .col{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:130px;padding:8px;flex:0 0 auto}
+.ladder .col .hd{text-align:center;font-weight:700;color:var(--yellow);border-bottom:1px solid var(--line);padding-bottom:6px}
+.ladder .col .s{text-align:center;padding:4px 0;border-bottom:1px dashed #22262e;font-size:12px;cursor:pointer}
+.ladder .col .s:last-child{border-bottom:none}
+.ladder .col .s:hover{background:#252b36}
+
+/* ---------- 加载/错误/分页 ---------- */
+.loading{color:var(--dim);text-align:center;padding:40px;display:flex;align-items:center;justify-content:center;gap:8px}
+.spinner-border{--bs-spinner-border-width:.13em;border-color:var(--line);border-right-color:var(--yellow)!important}
+.error{color:var(--red);text-align:center;padding:24px}
+.empty{color:var(--dim);text-align:center;padding:34px}
+.empty i{font-size:28px;opacity:.5;display:block;margin-bottom:6px}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:10px;font-size:12px;color:var(--dim)}
+.pager input{width:60px;background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:6px;padding:3px 6px;text-align:center}
+.foot{color:var(--dim);text-align:center;padding:18px;font-size:12px}
+
+/* ---------- 面板标题 ---------- */
+h3.sec{color:var(--dim);margin:14px 0 8px;font-size:14px;display:flex;align-items:center;gap:6px}
+h3.sec i{font-size:14px;color:var(--yellow)}
+
+/* ---------- 人气榜/风口/涨停原因/涨停复盘/龙头晋级/龙一 ---------- */
+/* 涨停原因分组 */
+.zr-groups{display:flex;flex-direction:column;gap:10px}
+.zr-group{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.zr-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.zr-name{font-weight:700;font-size:14px;color:var(--yellow)}
+.zr-stocks{display:flex;flex-wrap:wrap;gap:6px}
+.tagchip{display:inline-flex;align-items:center;gap:5px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:14px;padding:2px 10px;font-size:12px;cursor:pointer;transition:border-color .15s,color .15s}
+.tagchip:hover{border-color:var(--yellow);color:var(--yellow)}
+.tagchip b.lb{padding:0 5px;font-size:10px;background:#3a2f14;color:var(--yellow);border-radius:8px}
+/* 涨停复盘图 */
+.rv-flex{display:flex;gap:10px;flex-wrap:wrap}
+.rv-box{flex:1;min-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px}
+.rv-title{color:var(--dim);font-size:12px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.rv-title::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--yellow);display:inline-block}
+#rvTimeline,#rvPyramid{height:340px}
+/* 龙一 hero 卡片 */
+.card.hero{border-color:var(--yellow);background:linear-gradient(135deg,rgba(232,194,74,.1),transparent 70%);cursor:pointer}
+.card.hero .pr{font-size:26px}
+
+/* ---------- 题材周期表/时间线 ---------- */
+.tc-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tc-col{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tc-col.st0{border-top:3px solid #5a6270}
+.tc-col.st1{border-top:3px solid #4cd97a}
+.tc-col.st2{border-top:3px solid var(--yellow)}
+.tc-col.st3{border-top:3px solid var(--red)}
+.tc-hd{font-weight:700;padding:8px 12px;background:var(--panel2);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between}
+.tc-n{font-size:12px;color:var(--dim)}
+.tc-list{padding:8px;display:flex;flex-direction:column;gap:6px;max-height:560px;overflow-y:auto}
+.t-item{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid #2a2f3a;
+  border-radius:6px;padding:6px 10px;cursor:pointer;transition:border-color .15s}
+.t-item:hover{border-color:var(--yellow)}
+.t-title{flex:1;font-size:12.5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden}
+.t-hot{color:var(--yellow);font-size:11px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+/* 时间线 */
+.tl-wrap{position:relative;padding-left:26px}
+.tl-wrap::before{content:"";position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--line)}
+.tl-day{position:relative;margin-bottom:14px}
+.tl-dot{position:absolute;left:-24px;top:6px;width:10px;height:10px;border-radius:50%;
+  background:var(--panel2);border:2px solid var(--dim)}
+.tl-dot.now{border-color:var(--yellow);background:var(--yellow)}
+.tl-date{color:var(--yellow);font-weight:700;font-size:13px;margin-bottom:6px}
+.tl-items{display:flex;flex-direction:column;gap:6px;max-width:900px}
+/* 题材详情弹窗 */
+.tp-body{max-height:70vh;overflow:auto;white-space:pre-wrap;color:var(--text);font-size:13px;
+  line-height:1.8;padding:6px 2px}
+
+/* ---------- 盘面梳理(原版: 盘面亮点) ---------- */
+.pm-idx{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.pm-idx-card{flex:1;min-width:170px;background:var(--panel);border:1px solid var(--line);
+  border-radius:8px;padding:10px 16px;cursor:pointer;transition:border-color .15s}
+.pm-idx-card:hover{border-color:var(--yellow)}
+.pm-idx-card .nm{font-size:13px;color:var(--dim)}
+.pm-idx-card .pr{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;margin:2px 0}
+.pm-idx-card .ch{font-size:12px}
+.pm-line{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:10px 16px;margin-bottom:12px;font-size:14px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.pm-line .pm-k{color:var(--dim);margin-right:2px}
+.pm-line .pm-v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;margin-right:18px}
+.pm-hero{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-bottom:12px}
+.pm-score{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.pm-num{font-size:52px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.pm-lv0 .pm-num{color:var(--red)} .pm-lv1 .pm-num{color:#e07030}
+.pm-lv2 .pm-num{color:var(--yellow)} .pm-lv3 .pm-num{color:#5a8fbf}
+.pm-lv4 .pm-num{color:#4cd97a}
+.pm-info{flex:1;min-width:220px}
+.pm-level{font-size:22px;font-weight:700}
+.pm-lv0 .pm-level{color:var(--red)} .pm-lv1 .pm-level{color:#e07030}
+.pm-lv2 .pm-level{color:var(--yellow)} .pm-lv3 .pm-level{color:#5a8fbf}
+.pm-lv4 .pm-level{color:#4cd97a}
+.pm-advice{color:var(--dim);margin-top:4px}
+.pm-longyi{font-size:13px;color:var(--dim)}
+.pm-longyi b{color:var(--yellow);font-size:16px}
+.pm-grid{display:flex;gap:10px;flex-wrap:wrap}
+.pm-box{flex:1;min-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.pm-reasons{display:flex;flex-direction:column;gap:6px}
+.pm-reason{display:flex;align-items:center;gap:8px;background:var(--panel2);border-radius:6px;padding:6px 10px}
+.rk{width:20px;height:20px;border-radius:5px;background:#3a4150;color:#fff;font-size:11px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.rk1{background:var(--red)} .rk2{background:#e07030} .rk3{background:var(--yellow);color:#333}
+.rn{flex:1;font-size:13px}
+.pm-boards{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ---------- 问财选股 / 题材投资 ---------- */
+.wc-tpl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;padding:8px 10px;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.wc-tpl .wc-t{cursor:pointer;transition:border-color .15s}
+.wc-tpl .wc-t:hover{border-color:var(--yellow);color:var(--yellow)}
+.ti-topics{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.ti-topics .tagchip{cursor:pointer;font-size:13px;padding:5px 12px}
+.ti-topics .tagchip:hover{border-color:var(--yellow);color:var(--yellow)}
+.ti-topics .lb{margin-left:6px}
+
+/* ---------- K线弹窗 ---------- */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.mask.show{display:flex}
+.kmodal{background:var(--bg);border:1px solid var(--yellow);border-radius:10px;width:97vw;height:94vh;
+  max-height:94vh;display:flex;flex-direction:column;overflow:hidden;padding:14px 16px;
+  box-shadow:0 8px 40px rgba(0,0,0,.6);position:static}
+.kmodal.m-small{width:min(960px,94vw);height:auto;display:block}
+.m-head .sp{flex:1}
+.m-head .chip-toggle.on{border-color:var(--yellow);color:var(--yellow);background:rgba(232,194,74,.12)}
+/* K线区域撑满弹窗剩余空间 */
+.k-flex{flex:1;min-height:0;display:flex;gap:10px;align-items:stretch;margin-top:6px}
+.k-flex #kChart{flex:1;min-width:0;height:100%}
+#mChart{height:min(500px,60vh)}
+.m-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.m-head .nm{font-size:18px;font-weight:700}
+.m-head .cd{color:var(--dim);font-size:12px}
+.m-head .pr{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.m-head .close{margin-left:auto;background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  border-radius:6px;cursor:pointer;padding:2px 10px;font-size:14px}
+.m-head .close:hover{border-color:var(--red);color:var(--red)}
+.m-quote{display:flex;gap:4px 18px;flex-wrap:wrap;margin:8px 0;font-size:12px;color:var(--dim)}
+.m-quote b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+.m-period{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+.m-period .lbl{color:var(--dim);font-size:12px}
+#kChart{width:100%;height:min(560px,52vh)}
+
+/* ---------- 交易日历 ---------- */
+.cal-pop{background:var(--bg);border:1px solid var(--yellow);border-radius:10px;padding:14px 16px;
+  box-shadow:0 8px 40px rgba(0,0,0,.6);width:328px}
+.cal-head{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.cal-title{flex:1;text-align:center;font-weight:700;font-size:15px}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.cal-week span{text-align:center;font-size:11px;color:var(--dim);padding:2px 0}
+.cal-week span.we{color:var(--red)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-grid .day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:13px;border-radius:6px;cursor:pointer;position:relative;border:1px solid transparent}
+.cal-grid .day:hover{border-color:var(--yellow)}
+.cal-grid .day.off{color:#4a5160;cursor:not-allowed}
+.cal-grid .day.off:hover{border-color:transparent}
+.cal-grid .day.hol{color:var(--red);cursor:not-allowed}
+.cal-grid .day.hol:hover{border-color:transparent}
+.cal-grid .day.make{color:#4cd97a}
+.cal-grid .day.sel{background:rgba(255,180,0,.16);border-color:var(--yellow);color:var(--yellow);font-weight:700}
+.cal-grid .day.today{outline:1px solid var(--blue)}
+.cal-grid .day .hl{font-size:9px;color:var(--red);line-height:1;max-width:36px;overflow:hidden;
+  white-space:nowrap;text-overflow:ellipsis}
+.cal-grid .day .mk{position:absolute;top:3px;right:3px;width:4px;height:4px;border-radius:50%;background:#4cd97a}
+.cal-legend{display:flex;gap:14px;margin-top:10px;font-size:11px;color:var(--dim)}
+.cal-legend .lg{display:flex;align-items:center;gap:4px}
+.cal-legend .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.cal-legend .dot.ok{background:var(--text)}
+.cal-legend .dot.off{background:#4a5160}
+.cal-legend .dot.make{background:#4cd97a}

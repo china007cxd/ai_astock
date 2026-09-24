@@ -1,0 +1,997 @@
+== file: llm.cpython-311.pyc
+
+===== CODE LLMNotConfiguredError (argcount=0) =====
+ 18           0 RESUME                   0
+              2 LOAD_NAME                0 (__name__)
+              4 STORE_NAME               1 (__module__)
+              6 LOAD_CONST               0 ('LLMNotConfiguredError')
+              8 STORE_NAME               2 (__qualname__)
+
+ 19          10 LOAD_CONST               1 (None)
+             12 RETURN_VALUE
+
+===== CODE has_llm (argcount=0) =====
+ 22           0 RESUME                   0
+
+ 23           2 LOAD_GLOBAL              1 (NULL + bool)
+             14 LOAD_GLOBAL              2 (config)
+             26 LOAD_ATTR                2 (DEEPSEEK_API_KEY)
+             36 PRECALL                  1
+             40 CALL                     1
+             50 RETURN_VALUE
+
+===== CODE _require_key (argcount=0) =====
+ 26           0 RESUME                   0
+
+ 27           2 LOAD_GLOBAL              0 (config)
+             14 LOAD_ATTR                1 (DEEPSEEK_API_KEY)
+             24 POP_JUMP_FORWARD_IF_TRUE    15 (to 56)
+
+ 28          26 LOAD_GLOBAL              5 (NULL + LLMNotConfiguredError)
+
+ 29          38 LOAD_CONST               1 ('未配置 DEEPSEEK_API_KEY，请在 astock_agent/.env 中填写后重启服务')
+
+ 28          40 PRECALL                  1
+             44 CALL                     1
+             54 RAISE_VARARGS            1
+
+ 27     >>   56 LOAD_CONST               0 (None)
+             58 RETURN_VALUE
+
+===== CODE get_chat_llm (argcount=2) =====
+ 32           0 RESUME                   0
+
+ 33           2 LOAD_GLOBAL              1 (NULL + _require_key)
+             14 PRECALL                  0
+             18 CALL                     0
+             28 POP_TOP
+
+ 34          30 BUILD_MAP                0
+             32 STORE_FAST               2 (kwargs)
+
+ 35          34 LOAD_FAST                1 (json_mode)
+             36 POP_JUMP_FORWARD_IF_FALSE     7 (to 52)
+
+ 36          38 LOAD_CONST               1 ('type')
+             40 LOAD_CONST               2 ('json_object')
+             42 BUILD_MAP                1
+             44 LOAD_FAST                2 (kwargs)
+             46 LOAD_CONST               3 ('response_format')
+             48 STORE_SUBSCR
+
+ 37     >>   52 LOAD_GLOBAL              3 (NULL + ChatOpenAI)
+
+ 38          64 LOAD_GLOBAL              4 (config)
+             76 LOAD_ATTR                3 (TEXT_MODEL)
+
+ 39          86 LOAD_GLOBAL              4 (config)
+             98 LOAD_ATTR                4 (DEEPSEEK_API_KEY)
+
+ 40         108 LOAD_GLOBAL              4 (config)
+            120 LOAD_ATTR                5 (DEEPSEEK_BASE_URL)
+
+ 41         130 LOAD_FAST                0 (temperature)
+
+ 42         132 LOAD_CONST               4 (180)
+
+ 43         134 LOAD_CONST               5 (2)
+
+ 44         136 LOAD_FAST                2 (kwargs)
+
+ 37         138 KW_NAMES                 6
+            140 PRECALL                  7
+            144 CALL                     7
+            154 RETURN_VALUE
+
+===== CODE get_vision_client (argcount=0) =====
+ 48           0 RESUME                   0
+
+ 49           2 LOAD_GLOBAL              1 (NULL + _require_key)
+             14 PRECALL                  0
+             18 CALL                     0
+             28 POP_TOP
+
+ 50          30 LOAD_GLOBAL              3 (NULL + OpenAI)
+
+ 51          42 LOAD_GLOBAL              4 (config)
+             54 LOAD_ATTR                3 (DEEPSEEK_API_KEY)
+
+ 52          64 LOAD_GLOBAL              4 (config)
+             76 LOAD_ATTR                4 (DEEPSEEK_BASE_URL)
+
+ 53          86 LOAD_CONST               1 (180)
+
+ 54          88 LOAD_CONST               2 (2)
+
+ 50          90 KW_NAMES                 3
+             92 PRECALL                  4
+             96 CALL                     4
+            106 RETURN_VALUE
+
+===== CODE parse_json_text (argcount=1) =====
+ 58           0 RESUME                   0
+
+ 60           2 LOAD_FAST                0 (text)
+              4 JUMP_IF_TRUE_OR_POP      1 (to 8)
+              6 LOAD_CONST               1 ('')
+        >>    8 LOAD_METHOD              0 (strip)
+             30 PRECALL                  0
+             34 CALL                     0
+             44 STORE_FAST               1 (t)
+
+ 61          46 LOAD_GLOBAL              3 (NULL + re)
+             58 LOAD_ATTR                2 (search)
+             68 LOAD_CONST               2 ('```(?:json)?\\s*(.*?)```')
+             70 LOAD_FAST                1 (t)
+             72 LOAD_GLOBAL              2 (re)
+             84 LOAD_ATTR                3 (S)
+             94 PRECALL                  3
+             98 CALL                     3
+            108 STORE_FAST               2 (m)
+
+ 62         110 LOAD_FAST                2 (m)
+            112 POP_JUMP_FORWARD_IF_FALSE    39 (to 192)
+
+ 63         114 LOAD_FAST                2 (m)
+            116 LOAD_METHOD              4 (group)
+            138 LOAD_CONST               3 (1)
+            140 PRECALL                  1
+            144 CALL                     1
+            154 LOAD_METHOD              0 (strip)
+            176 PRECALL                  0
+            180 CALL                     0
+            190 STORE_FAST               1 (t)
+
+ 64     >>  192 NOP
+
+ 65         194 LOAD_GLOBAL             11 (NULL + json)
+            206 LOAD_ATTR                6 (loads)
+            216 LOAD_FAST                1 (t)
+            218 PRECALL                  1
+            222 CALL                     1
+            232 RETURN_VALUE
+        >>  234 PUSH_EXC_INFO
+
+ 66         236 LOAD_GLOBAL             10 (json)
+            248 LOAD_ATTR                7 (JSONDecodeError)
+            258 CHECK_EXC_MATCH
+            260 POP_JUMP_FORWARD_IF_FALSE   201 (to 664)
+            262 POP_TOP
+
+ 67         264 LOAD_FAST                1 (t)
+            266 LOAD_METHOD              8 (find)
+            288 LOAD_CONST               4 ('{')
+            290 PRECALL                  1
+            294 CALL                     1
+            304 LOAD_FAST                1 (t)
+            306 LOAD_METHOD              9 (rfind)
+            328 LOAD_CONST               5 ('}')
+            330 PRECALL                  1
+            334 CALL                     1
+            344 STORE_FAST               4 (e)
+            346 STORE_FAST               3 (s)
+
+ 68         348 LOAD_FAST                3 (s)
+            350 LOAD_CONST               6 (-1)
+            352 COMPARE_OP               3 (!=)
+            358 POP_JUMP_FORWARD_IF_FALSE    39 (to 438)
+            360 LOAD_FAST                4 (e)
+            362 LOAD_FAST                3 (s)
+            364 COMPARE_OP               4 (>)
+            370 POP_JUMP_FORWARD_IF_FALSE    33 (to 438)
+
+ 69         372 LOAD_GLOBAL             11 (NULL + json)
+            384 LOAD_ATTR                6 (loads)
+            394 LOAD_FAST                1 (t)
+            396 LOAD_FAST                3 (s)
+            398 LOAD_FAST                4 (e)
+            400 LOAD_CONST               3 (1)
+            402 BINARY_OP                0 (+)
+            406 BUILD_SLICE              2
+            408 BINARY_SUBSCR
+            418 PRECALL                  1
+            422 CALL                     1
+            432 SWAP                     2
+            434 POP_EXCEPT
+            436 RETURN_VALUE
+
+ 70     >>  438 LOAD_FAST                1 (t)
+            440 LOAD_METHOD              8 (find)
+            462 LOAD_CONST               7 ('[')
+            464 PRECALL                  1
+            468 CALL                     1
+            478 LOAD_FAST                1 (t)
+            480 LOAD_METHOD              9 (rfind)
+            502 LOAD_CONST               8 (']')
+            504 PRECALL                  1
+            508 CALL                     1
+            518 STORE_FAST               4 (e)
+            520 STORE_FAST               3 (s)
+
+ 71         522 LOAD_FAST                3 (s)
+            524 LOAD_CONST               6 (-1)
+            526 COMPARE_OP               3 (!=)
+            532 POP_JUMP_FORWARD_IF_FALSE    39 (to 612)
+            534 LOAD_FAST                4 (e)
+            536 LOAD_FAST                3 (s)
+            538 COMPARE_OP               4 (>)
+            544 POP_JUMP_FORWARD_IF_FALSE    33 (to 612)
+
+ 72         546 LOAD_GLOBAL             11 (NULL + json)
+            558 LOAD_ATTR                6 (loads)
+            568 LOAD_FAST                1 (t)
+            570 LOAD_FAST                3 (s)
+            572 LOAD_FAST                4 (e)
+            574 LOAD_CONST               3 (1)
+            576 BINARY_OP                0 (+)
+            580 BUILD_SLICE              2
+            582 BINARY_SUBSCR
+            592 PRECALL                  1
+            596 CALL                     1
+            606 SWAP                     2
+            608 POP_EXCEPT
+            610 RETURN_VALUE
+
+ 73     >>  612 LOAD_GLOBAL             21 (NULL + ValueError)
+            624 LOAD_CONST               9 ('无法从输出中解析 JSON: %s')
+            626 LOAD_FAST                1 (t)
+            628 LOAD_CONST              10 (None)
+            630 LOAD_CONST              11 (200)
+            632 BUILD_SLICE              2
+            634 BINARY_SUBSCR
+            644 BINARY_OP                6 (%)
+            648 PRECALL                  1
+            652 CALL                     1
+            662 RAISE_VARARGS            1
+
+ 66     >>  664 RERAISE                  0
+        >>  666 COPY                     3
+            668 POP_EXCEPT
+            670 RERAISE                  1
+ExceptionTable:
+  194 to 230 -> 234 [0]
+  234 to 432 -> 666 [1] lasti
+  438 to 606 -> 666 [1] lasti
+  612 to 664 -> 666 [1] lasti
+
+===== CODE chat_text (argcount=3) =====
+ 76           0 RESUME                   0
+
+ 78           2 LOAD_GLOBAL              1 (NULL + get_chat_llm)
+             14 LOAD_FAST                2 (temperature)
+             16 KW_NAMES                 1
+             18 PRECALL                  1
+             22 CALL                     1
+             32 STORE_FAST               3 (llm)
+
+ 79          34 BUILD_LIST               0
+             36 STORE_FAST               4 (msgs)
+
+ 80          38 LOAD_FAST                1 (system)
+             40 POP_JUMP_FORWARD_IF_FALSE    23 (to 88)
+
+ 81          42 LOAD_FAST                4 (msgs)
+             44 LOAD_METHOD              1 (append)
+             66 LOAD_CONST               2 ('system')
+             68 LOAD_FAST                1 (system)
+             70 BUILD_TUPLE              2
+             72 PRECALL                  1
+             76 CALL                     1
+             86 POP_TOP
+
+ 82     >>   88 LOAD_FAST                4 (msgs)
+             90 LOAD_METHOD              1 (append)
+            112 LOAD_CONST               3 ('human')
+            114 LOAD_FAST                0 (prompt)
+            116 BUILD_TUPLE              2
+            118 PRECALL                  1
+            122 CALL                     1
+            132 POP_TOP
+
+ 83         134 LOAD_FAST                3 (llm)
+            136 LOAD_METHOD              2 (invoke)
+            158 LOAD_FAST                4 (msgs)
+            160 PRECALL                  1
+            164 CALL                     1
+            174 STORE_FAST               5 (resp)
+
+ 84         176 LOAD_GLOBAL              7 (NULL + isinstance)
+            188 LOAD_FAST                5 (resp)
+            190 LOAD_ATTR                4 (content)
+            200 LOAD_GLOBAL             10 (str)
+            212 PRECALL                  2
+            216 CALL                     2
+            226 POP_JUMP_FORWARD_IF_FALSE     7 (to 242)
+            228 LOAD_FAST                5 (resp)
+            230 LOAD_ATTR                4 (content)
+            240 JUMP_FORWARD            19 (to 280)
+        >>  242 LOAD_GLOBAL             11 (NULL + str)
+            254 LOAD_FAST                5 (resp)
+            256 LOAD_ATTR                4 (content)
+            266 PRECALL                  1
+            270 CALL                     1
+        >>  280 RETURN_VALUE
+
+===== CODE chat_json (argcount=2) =====
+ 87           0 RESUME                   0
+
+ 89           2 LOAD_GLOBAL              1 (NULL + get_chat_llm)
+             14 LOAD_CONST               1 (True)
+             16 KW_NAMES                 2
+             18 PRECALL                  1
+             22 CALL                     1
+             32 STORE_FAST               2 (llm)
+
+ 90          34 BUILD_LIST               0
+             36 STORE_FAST               3 (msgs)
+
+ 91          38 LOAD_FAST                1 (system)
+             40 POP_JUMP_FORWARD_IF_FALSE    23 (to 88)
+
+ 92          42 LOAD_FAST                3 (msgs)
+             44 LOAD_METHOD              1 (append)
+             66 LOAD_CONST               3 ('system')
+             68 LOAD_FAST                1 (system)
+             70 BUILD_TUPLE              2
+             72 PRECALL                  1
+             76 CALL                     1
+             86 POP_TOP
+
+ 93     >>   88 LOAD_FAST                3 (msgs)
+             90 LOAD_METHOD              1 (append)
+            112 LOAD_CONST               4 ('human')
+            114 LOAD_FAST                0 (prompt)
+            116 BUILD_TUPLE              2
+            118 PRECALL                  1
+            122 CALL                     1
+            132 POP_TOP
+
+ 94         134 LOAD_FAST                2 (llm)
+            136 LOAD_METHOD              2 (invoke)
+            158 LOAD_FAST                3 (msgs)
+            160 PRECALL                  1
+            164 CALL                     1
+            174 STORE_FAST               4 (resp)
+
+ 95         176 LOAD_GLOBAL              7 (NULL + parse_json_text)
+            188 LOAD_GLOBAL              9 (NULL + isinstance)
+            200 LOAD_FAST                4 (resp)
+            202 LOAD_ATTR                5 (content)
+            212 LOAD_GLOBAL             12 (str)
+            224 PRECALL                  2
+            228 CALL                     2
+            238 POP_JUMP_FORWARD_IF_FALSE     7 (to 254)
+            240 LOAD_FAST                4 (resp)
+            242 LOAD_ATTR                5 (content)
+            252 JUMP_FORWARD            19 (to 292)
+        >>  254 LOAD_GLOBAL             13 (NULL + str)
+            266 LOAD_FAST                4 (resp)
+            268 LOAD_ATTR                5 (content)
+            278 PRECALL                  1
+            282 CALL                     1
+        >>  292 PRECALL                  1
+            296 CALL                     1
+            306 RETURN_VALUE
+
+===== CODE analyze_image (argcount=3) =====
+ 98           0 RESUME                   0
+
+100           2 LOAD_GLOBAL              1 (NULL + get_vision_client)
+             14 PRECALL                  0
+             18 CALL                     0
+             28 STORE_FAST               3 (client)
+
+101          30 LOAD_GLOBAL              3 (NULL + base64)
+             42 LOAD_ATTR                2 (b64encode)
+             52 LOAD_FAST                0 (image_bytes)
+             54 PRECALL                  1
+             58 CALL                     1
+             68 LOAD_METHOD              3 (decode)
+             90 LOAD_CONST               1 ('ascii')
+             92 PRECALL                  1
+             96 CALL                     1
+            106 STORE_FAST               4 (b64)
+
+102         108 LOAD_FAST                3 (client)
+            110 LOAD_ATTR                4 (chat)
+            120 LOAD_ATTR                5 (completions)
+            130 LOAD_METHOD              6 (create)
+
+103         152 LOAD_GLOBAL             14 (config)
+            164 LOAD_ATTR                8 (VISION_MODEL)
+
+104         174 LOAD_CONST               2 (0.1)
+
+107         176 LOAD_CONST               3 ('user')
+
+109         178 LOAD_CONST               4 ('text')
+            180 LOAD_FAST                2 (prompt)
+            182 LOAD_CONST               5 (('type', 'text'))
+            184 BUILD_CONST_KEY_MAP      2
+
+110         186 LOAD_CONST               6 ('image_url')
+
+111         188 LOAD_CONST               7 ('url')
+            190 LOAD_CONST               8 ('data:')
+            192 LOAD_FAST                1 (mime)
+            194 FORMAT_VALUE             1 (str)
+            196 LOAD_CONST               9 (';base64,')
+            198 LOAD_FAST                4 (b64)
+            200 FORMAT_VALUE             1 (str)
+            202 BUILD_STRING             4
+            204 BUILD_MAP                1
+
+110         206 LOAD_CONST              10 (('type', 'image_url'))
+            208 BUILD_CONST_KEY_MAP      2
+
+108         210 BUILD_LIST               2
+
+106         212 LOAD_CONST              11 (('role', 'content'))
+            214 BUILD_CONST_KEY_MAP      2
+
+105         216 BUILD_LIST               1
+
+102         218 KW_NAMES                12
+            220 PRECALL                  3
+            224 CALL                     3
+            234 STORE_FAST               5 (resp)
+
+116         236 LOAD_FAST                5 (resp)
+            238 LOAD_ATTR                9 (choices)
+            248 LOAD_CONST              13 (0)
+            250 BINARY_SUBSCR
+            260 LOAD_ATTR               10 (message)
+            270 LOAD_ATTR               11 (content)
+            280 JUMP_IF_TRUE_OR_POP      1 (to 284)
+            282 LOAD_CONST              14 ('')
+        >>  284 RETURN_VALUE
+
+===== MODULE top-level =====
+  0           0 RESUME                   0
+
+  1           2 LOAD_CONST               0 ('DeepSeek 客户端：文本模型(chat) + 视觉模型(vision)\n\n- 文本：langchain-openai 的 ChatOpenAI（OpenAI 兼容协议）\n- 视觉：openai SDK 直连 deepseek-v4-flash-vision-exp（base64 内联传图）\n')
+              4 STORE_NAME               0 (__doc__)
+
+  6           6 LOAD_CONST               1 (0)
+              8 LOAD_CONST               2 (('annotations',))
+             10 IMPORT_NAME              1 (__future__)
+             12 IMPORT_FROM              2 (annotations)
+             14 STORE_NAME               2 (annotations)
+             16 POP_TOP
+
+  8          18 LOAD_CONST               1 (0)
+             20 LOAD_CONST               3 (None)
+             22 IMPORT_NAME              3 (base64)
+             24 STORE_NAME               3 (base64)
+
+  9          26 LOAD_CONST               1 (0)
+             28 LOAD_CONST               3 (None)
+             30 IMPORT_NAME              4 (json)
+             32 STORE_NAME               4 (json)
+
+ 10          34 LOAD_CONST               1 (0)
+             36 LOAD_CONST               3 (None)
+             38 IMPORT_NAME              5 (re)
+             40 STORE_NAME               5 (re)
+
+ 12          42 LOAD_CONST               1 (0)
+             44 LOAD_CONST               4 (('ChatOpenAI',))
+             46 IMPORT_NAME              6 (langchain_openai)
+             48 IMPORT_FROM              7 (ChatOpenAI)
+             50 STORE_NAME               7 (ChatOpenAI)
+             52 POP_TOP
+
+ 13          54 LOAD_CONST               1 (0)
+             56 LOAD_CONST               5 (('OpenAI',))
+             58 IMPORT_NAME              8 (openai)
+             60 IMPORT_FROM              9 (OpenAI)
+             62 STORE_NAME               9 (OpenAI)
+             64 POP_TOP
+
+ 15          66 LOAD_CONST               6 (1)
+             68 LOAD_CONST               7 (('config',))
+             70 IMPORT_NAME             10
+             72 IMPORT_FROM             11 (config)
+             74 STORE_NAME              11 (config)
+             76 POP_TOP
+
+ 18          78 PUSH_NULL
+             80 LOAD_BUILD_CLASS
+             82 LOAD_CONST               8 (<code object LLMNotConfiguredError at 0x000001817C52E250, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 18>)
+             84 MAKE_FUNCTION            0
+             86 LOAD_CONST               9 ('LLMNotConfiguredError')
+             88 LOAD_NAME               12 (RuntimeError)
+             90 PRECALL                  3
+             94 CALL                     3
+            104 STORE_NAME              13 (LLMNotConfiguredError)
+
+ 22         106 LOAD_CONST              37 (('return', 'bool'))
+            108 LOAD_CONST              12 (<code object has_llm at 0x000001817C57E010, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 22>)
+            110 MAKE_FUNCTION            4 (annotations)
+            112 STORE_NAME              14 (has_llm)
+
+ 26         114 LOAD_CONST              38 (('return', 'None'))
+            116 LOAD_CONST              14 (<code object _require_key at 0x000001817C62CC30, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 26>)
+            118 MAKE_FUNCTION            4 (annotations)
+            120 STORE_NAME              15 (_require_key)
+
+ 32         122 LOAD_CONST              39 ((0.2, False))
+            124 LOAD_CONST              40 (('temperature', 'float', 'json_mode', 'bool', 'return', 'ChatOpenAI'))
+            126 LOAD_CONST              21 (<code object get_chat_llm at 0x000001817C50EC30, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 32>)
+            128 MAKE_FUNCTION            5 (defaults, annotations)
+            130 STORE_NAME              16 (get_chat_llm)
+
+ 48         132 LOAD_CONST              41 (('return', 'OpenAI'))
+            134 LOAD_CONST              23 (<code object get_vision_client at 0x000001817C5E9330, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 48>)
+            136 MAKE_FUNCTION            4 (annotations)
+            138 STORE_NAME              17 (get_vision_client)
+
+ 58         140 LOAD_CONST              42 (('text', 'str', 'return', 'dict | list'))
+            142 LOAD_CONST              27 (<code object parse_json_text at 0x000001817C759FD0, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 58>)
+            144 MAKE_FUNCTION            4 (annotations)
+            146 STORE_NAME              18 (parse_json_text)
+
+ 76         148 LOAD_CONST              43 (('', 0.2))
+            150 LOAD_CONST              44 (('prompt', 'str', 'system', 'str', 'temperature', 'float', 'return', 'str'))
+            152 LOAD_CONST              31 (<code object chat_text at 0x000001817C442970, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 76>)
+            154 MAKE_FUNCTION            5 (defaults, annotations)
+            156 STORE_NAME              19 (chat_text)
+
+ 87         158 LOAD_CONST              45 (('',))
+            160 LOAD_CONST              46 (('prompt', 'str', 'system', 'str', 'return', 'dict | list'))
+            162 LOAD_CONST              32 (<code object chat_json at 0x000001817C575F30, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 87>)
+            164 MAKE_FUNCTION            5 (defaults, annotations)
+            166 STORE_NAME              20 (chat_json)
+
+ 98         168 LOAD_CONST              47 (('image_bytes', 'bytes', 'mime', 'str', 'prompt', 'str', 'return', 'str'))
+            170 LOAD_CONST              36 (<code object analyze_image at 0x000001817C442B50, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 98>)
+            172 MAKE_FUNCTION            4 (annotations)
+            174 STORE_NAME              21 (analyze_image)
+            176 LOAD_CONST               3 (None)
+            178 RETURN_VALUE
+
+Disassembly of <code object LLMNotConfiguredError at 0x000001817C52E250, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 18>:
+ 18           0 RESUME                   0
+              2 LOAD_NAME                0 (__name__)
+              4 STORE_NAME               1 (__module__)
+              6 LOAD_CONST               0 ('LLMNotConfiguredError')
+              8 STORE_NAME               2 (__qualname__)
+
+ 19          10 LOAD_CONST               1 (None)
+             12 RETURN_VALUE
+
+Disassembly of <code object has_llm at 0x000001817C57E010, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 22>:
+ 22           0 RESUME                   0
+
+ 23           2 LOAD_GLOBAL              1 (NULL + bool)
+             14 LOAD_GLOBAL              2 (config)
+             26 LOAD_ATTR                2 (DEEPSEEK_API_KEY)
+             36 PRECALL                  1
+             40 CALL                     1
+             50 RETURN_VALUE
+
+Disassembly of <code object _require_key at 0x000001817C62CC30, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 26>:
+ 26           0 RESUME                   0
+
+ 27           2 LOAD_GLOBAL              0 (config)
+             14 LOAD_ATTR                1 (DEEPSEEK_API_KEY)
+             24 POP_JUMP_FORWARD_IF_TRUE    15 (to 56)
+
+ 28          26 LOAD_GLOBAL              5 (NULL + LLMNotConfiguredError)
+
+ 29          38 LOAD_CONST               1 ('未配置 DEEPSEEK_API_KEY，请在 astock_agent/.env 中填写后重启服务')
+
+ 28          40 PRECALL                  1
+             44 CALL                     1
+             54 RAISE_VARARGS            1
+
+ 27     >>   56 LOAD_CONST               0 (None)
+             58 RETURN_VALUE
+
+Disassembly of <code object get_chat_llm at 0x000001817C50EC30, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 32>:
+ 32           0 RESUME                   0
+
+ 33           2 LOAD_GLOBAL              1 (NULL + _require_key)
+             14 PRECALL                  0
+             18 CALL                     0
+             28 POP_TOP
+
+ 34          30 BUILD_MAP                0
+             32 STORE_FAST               2 (kwargs)
+
+ 35          34 LOAD_FAST                1 (json_mode)
+             36 POP_JUMP_FORWARD_IF_FALSE     7 (to 52)
+
+ 36          38 LOAD_CONST               1 ('type')
+             40 LOAD_CONST               2 ('json_object')
+             42 BUILD_MAP                1
+             44 LOAD_FAST                2 (kwargs)
+             46 LOAD_CONST               3 ('response_format')
+             48 STORE_SUBSCR
+
+ 37     >>   52 LOAD_GLOBAL              3 (NULL + ChatOpenAI)
+
+ 38          64 LOAD_GLOBAL              4 (config)
+             76 LOAD_ATTR                3 (TEXT_MODEL)
+
+ 39          86 LOAD_GLOBAL              4 (config)
+             98 LOAD_ATTR                4 (DEEPSEEK_API_KEY)
+
+ 40         108 LOAD_GLOBAL              4 (config)
+            120 LOAD_ATTR                5 (DEEPSEEK_BASE_URL)
+
+ 41         130 LOAD_FAST                0 (temperature)
+
+ 42         132 LOAD_CONST               4 (180)
+
+ 43         134 LOAD_CONST               5 (2)
+
+ 44         136 LOAD_FAST                2 (kwargs)
+
+ 37         138 KW_NAMES                 6
+            140 PRECALL                  7
+            144 CALL                     7
+            154 RETURN_VALUE
+
+Disassembly of <code object get_vision_client at 0x000001817C5E9330, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 48>:
+ 48           0 RESUME                   0
+
+ 49           2 LOAD_GLOBAL              1 (NULL + _require_key)
+             14 PRECALL                  0
+             18 CALL                     0
+             28 POP_TOP
+
+ 50          30 LOAD_GLOBAL              3 (NULL + OpenAI)
+
+ 51          42 LOAD_GLOBAL              4 (config)
+             54 LOAD_ATTR                3 (DEEPSEEK_API_KEY)
+
+ 52          64 LOAD_GLOBAL              4 (config)
+             76 LOAD_ATTR                4 (DEEPSEEK_BASE_URL)
+
+ 53          86 LOAD_CONST               1 (180)
+
+ 54          88 LOAD_CONST               2 (2)
+
+ 50          90 KW_NAMES                 3
+             92 PRECALL                  4
+             96 CALL                     4
+            106 RETURN_VALUE
+
+Disassembly of <code object parse_json_text at 0x000001817C759FD0, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 58>:
+ 58           0 RESUME                   0
+
+ 60           2 LOAD_FAST                0 (text)
+              4 JUMP_IF_TRUE_OR_POP      1 (to 8)
+              6 LOAD_CONST               1 ('')
+        >>    8 LOAD_METHOD              0 (strip)
+             30 PRECALL                  0
+             34 CALL                     0
+             44 STORE_FAST               1 (t)
+
+ 61          46 LOAD_GLOBAL              3 (NULL + re)
+             58 LOAD_ATTR                2 (search)
+             68 LOAD_CONST               2 ('```(?:json)?\\s*(.*?)```')
+             70 LOAD_FAST                1 (t)
+             72 LOAD_GLOBAL              2 (re)
+             84 LOAD_ATTR                3 (S)
+             94 PRECALL                  3
+             98 CALL                     3
+            108 STORE_FAST               2 (m)
+
+ 62         110 LOAD_FAST                2 (m)
+            112 POP_JUMP_FORWARD_IF_FALSE    39 (to 192)
+
+ 63         114 LOAD_FAST                2 (m)
+            116 LOAD_METHOD              4 (group)
+            138 LOAD_CONST               3 (1)
+            140 PRECALL                  1
+            144 CALL                     1
+            154 LOAD_METHOD              0 (strip)
+            176 PRECALL                  0
+            180 CALL                     0
+            190 STORE_FAST               1 (t)
+
+ 64     >>  192 NOP
+
+ 65         194 LOAD_GLOBAL             11 (NULL + json)
+            206 LOAD_ATTR                6 (loads)
+            216 LOAD_FAST                1 (t)
+            218 PRECALL                  1
+            222 CALL                     1
+            232 RETURN_VALUE
+        >>  234 PUSH_EXC_INFO
+
+ 66         236 LOAD_GLOBAL             10 (json)
+            248 LOAD_ATTR                7 (JSONDecodeError)
+            258 CHECK_EXC_MATCH
+            260 POP_JUMP_FORWARD_IF_FALSE   201 (to 664)
+            262 POP_TOP
+
+ 67         264 LOAD_FAST                1 (t)
+            266 LOAD_METHOD              8 (find)
+            288 LOAD_CONST               4 ('{')
+            290 PRECALL                  1
+            294 CALL                     1
+            304 LOAD_FAST                1 (t)
+            306 LOAD_METHOD              9 (rfind)
+            328 LOAD_CONST               5 ('}')
+            330 PRECALL                  1
+            334 CALL                     1
+            344 STORE_FAST               4 (e)
+            346 STORE_FAST               3 (s)
+
+ 68         348 LOAD_FAST                3 (s)
+            350 LOAD_CONST               6 (-1)
+            352 COMPARE_OP               3 (!=)
+            358 POP_JUMP_FORWARD_IF_FALSE    39 (to 438)
+            360 LOAD_FAST                4 (e)
+            362 LOAD_FAST                3 (s)
+            364 COMPARE_OP               4 (>)
+            370 POP_JUMP_FORWARD_IF_FALSE    33 (to 438)
+
+ 69         372 LOAD_GLOBAL             11 (NULL + json)
+            384 LOAD_ATTR                6 (loads)
+            394 LOAD_FAST                1 (t)
+            396 LOAD_FAST                3 (s)
+            398 LOAD_FAST                4 (e)
+            400 LOAD_CONST               3 (1)
+            402 BINARY_OP                0 (+)
+            406 BUILD_SLICE              2
+            408 BINARY_SUBSCR
+            418 PRECALL                  1
+            422 CALL                     1
+            432 SWAP                     2
+            434 POP_EXCEPT
+            436 RETURN_VALUE
+
+ 70     >>  438 LOAD_FAST                1 (t)
+            440 LOAD_METHOD              8 (find)
+            462 LOAD_CONST               7 ('[')
+            464 PRECALL                  1
+            468 CALL                     1
+            478 LOAD_FAST                1 (t)
+            480 LOAD_METHOD              9 (rfind)
+            502 LOAD_CONST               8 (']')
+            504 PRECALL                  1
+            508 CALL                     1
+            518 STORE_FAST               4 (e)
+            520 STORE_FAST               3 (s)
+
+ 71         522 LOAD_FAST                3 (s)
+            524 LOAD_CONST               6 (-1)
+            526 COMPARE_OP               3 (!=)
+            532 POP_JUMP_FORWARD_IF_FALSE    39 (to 612)
+            534 LOAD_FAST                4 (e)
+            536 LOAD_FAST                3 (s)
+            538 COMPARE_OP               4 (>)
+            544 POP_JUMP_FORWARD_IF_FALSE    33 (to 612)
+
+ 72         546 LOAD_GLOBAL             11 (NULL + json)
+            558 LOAD_ATTR                6 (loads)
+            568 LOAD_FAST                1 (t)
+            570 LOAD_FAST                3 (s)
+            572 LOAD_FAST                4 (e)
+            574 LOAD_CONST               3 (1)
+            576 BINARY_OP                0 (+)
+            580 BUILD_SLICE              2
+            582 BINARY_SUBSCR
+            592 PRECALL                  1
+            596 CALL                     1
+            606 SWAP                     2
+            608 POP_EXCEPT
+            610 RETURN_VALUE
+
+ 73     >>  612 LOAD_GLOBAL             21 (NULL + ValueError)
+            624 LOAD_CONST               9 ('无法从输出中解析 JSON: %s')
+            626 LOAD_FAST                1 (t)
+            628 LOAD_CONST              10 (None)
+            630 LOAD_CONST              11 (200)
+            632 BUILD_SLICE              2
+            634 BINARY_SUBSCR
+            644 BINARY_OP                6 (%)
+            648 PRECALL                  1
+            652 CALL                     1
+            662 RAISE_VARARGS            1
+
+ 66     >>  664 RERAISE                  0
+        >>  666 COPY                     3
+            668 POP_EXCEPT
+            670 RERAISE                  1
+ExceptionTable:
+  194 to 230 -> 234 [0]
+  234 to 432 -> 666 [1] lasti
+  438 to 606 -> 666 [1] lasti
+  612 to 664 -> 666 [1] lasti
+
+Disassembly of <code object chat_text at 0x000001817C442970, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 76>:
+ 76           0 RESUME                   0
+
+ 78           2 LOAD_GLOBAL              1 (NULL + get_chat_llm)
+             14 LOAD_FAST                2 (temperature)
+             16 KW_NAMES                 1
+             18 PRECALL                  1
+             22 CALL                     1
+             32 STORE_FAST               3 (llm)
+
+ 79          34 BUILD_LIST               0
+             36 STORE_FAST               4 (msgs)
+
+ 80          38 LOAD_FAST                1 (system)
+             40 POP_JUMP_FORWARD_IF_FALSE    23 (to 88)
+
+ 81          42 LOAD_FAST                4 (msgs)
+             44 LOAD_METHOD              1 (append)
+             66 LOAD_CONST               2 ('system')
+             68 LOAD_FAST                1 (system)
+             70 BUILD_TUPLE              2
+             72 PRECALL                  1
+             76 CALL                     1
+             86 POP_TOP
+
+ 82     >>   88 LOAD_FAST                4 (msgs)
+             90 LOAD_METHOD              1 (append)
+            112 LOAD_CONST               3 ('human')
+            114 LOAD_FAST                0 (prompt)
+            116 BUILD_TUPLE              2
+            118 PRECALL                  1
+            122 CALL                     1
+            132 POP_TOP
+
+ 83         134 LOAD_FAST                3 (llm)
+            136 LOAD_METHOD              2 (invoke)
+            158 LOAD_FAST                4 (msgs)
+            160 PRECALL                  1
+            164 CALL                     1
+            174 STORE_FAST               5 (resp)
+
+ 84         176 LOAD_GLOBAL              7 (NULL + isinstance)
+            188 LOAD_FAST                5 (resp)
+            190 LOAD_ATTR                4 (content)
+            200 LOAD_GLOBAL             10 (str)
+            212 PRECALL                  2
+            216 CALL                     2
+            226 POP_JUMP_FORWARD_IF_FALSE     7 (to 242)
+            228 LOAD_FAST                5 (resp)
+            230 LOAD_ATTR                4 (content)
+            240 JUMP_FORWARD            19 (to 280)
+        >>  242 LOAD_GLOBAL             11 (NULL + str)
+            254 LOAD_FAST                5 (resp)
+            256 LOAD_ATTR                4 (content)
+            266 PRECALL                  1
+            270 CALL                     1
+        >>  280 RETURN_VALUE
+
+Disassembly of <code object chat_json at 0x000001817C575F30, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 87>:
+ 87           0 RESUME                   0
+
+ 89           2 LOAD_GLOBAL              1 (NULL + get_chat_llm)
+             14 LOAD_CONST               1 (True)
+             16 KW_NAMES                 2
+             18 PRECALL                  1
+             22 CALL                     1
+             32 STORE_FAST               2 (llm)
+
+ 90          34 BUILD_LIST               0
+             36 STORE_FAST               3 (msgs)
+
+ 91          38 LOAD_FAST                1 (system)
+             40 POP_JUMP_FORWARD_IF_FALSE    23 (to 88)
+
+ 92          42 LOAD_FAST                3 (msgs)
+             44 LOAD_METHOD              1 (append)
+             66 LOAD_CONST               3 ('system')
+             68 LOAD_FAST                1 (system)
+             70 BUILD_TUPLE              2
+             72 PRECALL                  1
+             76 CALL                     1
+             86 POP_TOP
+
+ 93     >>   88 LOAD_FAST                3 (msgs)
+             90 LOAD_METHOD              1 (append)
+            112 LOAD_CONST               4 ('human')
+            114 LOAD_FAST                0 (prompt)
+            116 BUILD_TUPLE              2
+            118 PRECALL                  1
+            122 CALL                     1
+            132 POP_TOP
+
+ 94         134 LOAD_FAST                2 (llm)
+            136 LOAD_METHOD              2 (invoke)
+            158 LOAD_FAST                3 (msgs)
+            160 PRECALL                  1
+            164 CALL                     1
+            174 STORE_FAST               4 (resp)
+
+ 95         176 LOAD_GLOBAL              7 (NULL + parse_json_text)
+            188 LOAD_GLOBAL              9 (NULL + isinstance)
+            200 LOAD_FAST                4 (resp)
+            202 LOAD_ATTR                5 (content)
+            212 LOAD_GLOBAL             12 (str)
+            224 PRECALL                  2
+            228 CALL                     2
+            238 POP_JUMP_FORWARD_IF_FALSE     7 (to 254)
+            240 LOAD_FAST                4 (resp)
+            242 LOAD_ATTR                5 (content)
+            252 JUMP_FORWARD            19 (to 292)
+        >>  254 LOAD_GLOBAL             13 (NULL + str)
+            266 LOAD_FAST                4 (resp)
+            268 LOAD_ATTR                5 (content)
+            278 PRECALL                  1
+            282 CALL                     1
+        >>  292 PRECALL                  1
+            296 CALL                     1
+            306 RETURN_VALUE
+
+Disassembly of <code object analyze_image at 0x000001817C442B50, file "D:\SoftwareInstallaction\v62.1\astock_agent\src\astock_agent\llm.py", line 98>:
+ 98           0 RESUME                   0
+
+100           2 LOAD_GLOBAL              1 (NULL + get_vision_client)
+             14 PRECALL                  0
+             18 CALL                     0
+             28 STORE_FAST               3 (client)
+
+101          30 LOAD_GLOBAL              3 (NULL + base64)
+             42 LOAD_ATTR                2 (b64encode)
+             52 LOAD_FAST                0 (image_bytes)
+             54 PRECALL                  1
+             58 CALL                     1
+             68 LOAD_METHOD              3 (decode)
+             90 LOAD_CONST               1 ('ascii')
+             92 PRECALL                  1
+             96 CALL                     1
+            106 STORE_FAST               4 (b64)
+
+102         108 LOAD_FAST                3 (client)
+            110 LOAD_ATTR                4 (chat)
+            120 LOAD_ATTR                5 (completions)
+            130 LOAD_METHOD              6 (create)
+
+103         152 LOAD_GLOBAL             14 (config)
+            164 LOAD_ATTR                8 (VISION_MODEL)
+
+104         174 LOAD_CONST               2 (0.1)
+
+107         176 LOAD_CONST               3 ('user')
+
+109         178 LOAD_CONST               4 ('text')
+            180 LOAD_FAST                2 (prompt)
+            182 LOAD_CONST               5 (('type', 'text'))
+            184 BUILD_CONST_KEY_MAP      2
+
+110         186 LOAD_CONST               6 ('image_url')
+
+111         188 LOAD_CONST               7 ('url')
+            190 LOAD_CONST               8 ('data:')
+            192 LOAD_FAST                1 (mime)
+            194 FORMAT_VALUE             1 (str)
+            196 LOAD_CONST               9 (';base64,')
+            198 LOAD_FAST                4 (b64)
+            200 FORMAT_VALUE             1 (str)
+            202 BUILD_STRING             4
+            204 BUILD_MAP                1
+
+110         206 LOAD_CONST              10 (('type', 'image_url'))
+            208 BUILD_CONST_KEY_MAP      2
+
+108         210 BUILD_LIST               2
+
+106         212 LOAD_CONST              11 (('role', 'content'))
+            214 BUILD_CONST_KEY_MAP      2
+
+105         216 BUILD_LIST               1
+
+102         218 KW_NAMES                12
+            220 PRECALL                  3
+            224 CALL                     3
+            234 STORE_FAST               5 (resp)
+
+116         236 LOAD_FAST                5 (resp)
+            238 LOAD_ATTR                9 (choices)
+            248 LOAD_CONST              13 (0)
+            250 BINARY_SUBSCR
+            260 LOAD_ATTR               10 (message)
+            270 LOAD_ATTR               11 (content)
+            280 JUMP_IF_TRUE_OR_POP      1 (to 284)
+            282 LOAD_CONST              14 ('')
+        >>  284 RETURN_VALUE

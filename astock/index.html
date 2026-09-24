@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A股复盘看盘</title>
+<link rel="stylesheet" href="static/vendor/bootstrap.min.css?v=3">
+<link rel="stylesheet" href="static/vendor/bootstrap-icons.min.css?v=3">
+<link rel="stylesheet" href="static/css/app.css?v=3">
+</head>
+<body>
+<header>
+  <div class="logo"><i class="bi bi-graph-up-arrow"></i>A股复盘看盘</div>
+  <div class="clock" id="clock">--</div>
+  <div class="status" id="mktStatus">--</div>
+  <div class="right">
+    <label class="form-check"><input class="form-check-input" type="checkbox" id="autoRef" checked>自动刷新</label>
+    <select class="form-select" id="refInt">
+      <option value="15">15秒</option>
+      <option value="30" selected>30秒</option>
+      <option value="60">60秒</option>
+    </select>
+    <button class="btn mini" onclick="refreshAll()"><i class="bi bi-arrow-clockwise"></i>立即刷新</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+<main>
+  <div class="panel" id="pn-watchlist">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="wlSearch" placeholder="输入股票代码 / 名称 / 拼音首字母，如 601318、平安、zgpa" autocomplete="off">
+        <div class="search-drop" id="wlDrop"></div>
+      </div>
+      <button class="btn mini" onclick="loadWatchlist()"><i class="bi bi-arrow-clockwise"></i>刷新行情</button>
+      <div class="hint" id="wlHint"></div>
+    </div>
+    <div class="tbl-wrap" id="wlTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-indices">
+    <div class="cards" id="idxCards"></div>
+    <div class="stats" id="idxUpDown"></div>
+    <div class="ladder" id="idxLadder"></div>
+    <h3 class="sec" id="plateTitle"><i class="bi bi-collection"></i>板块涨停</h3>
+    <div class="tbl-wrap" id="idxPlates" style="max-height:420px"></div>
+  </div>
+
+  <div class="panel" id="pn-duishu">
+    <div class="toolbar">
+      <input type="text" readonly id="dsDate" class="cal-in" onclick="openCal('dsDate')" title="点击选择交易日(周末/节假日不可选)">
+      <div class="hint" id="dsHint"></div>
+      <div id="dsSubTabs" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+    <div class="stats" id="dsStats"></div>
+    <div class="feed" id="dsFeed"></div>
+    <div class="tbl-wrap" id="dsTblWrap"><div class="loading">加载中...</div></div>
+    <div class="pager">
+      <button class="btn mini" id="dsPrev" onclick="dsPage(-1)"><i class="bi bi-chevron-left"></i>上一页</button>
+      <span id="dsPageInfo">-</span>
+      <button class="btn mini" id="dsNext" onclick="dsPage(1)">下一页<i class="bi bi-chevron-right"></i></button>
+    </div>
+  </div>
+
+  <div class="panel" id="pn-limitup">
+    <div class="toolbar">
+      <input type="text" readonly id="luDate" class="cal-in" onclick="openCal('luDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadLimitUp()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="luHint"></div>
+    </div>
+    <div class="tbl-wrap" id="luTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-ztpool">
+    <div class="toolbar">
+      <input type="text" readonly id="ztDate" class="cal-in" onclick="openCal('ztDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadZtPool()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="ztHint"></div>
+    </div>
+    <div class="tbl-wrap" id="ztTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-zbpool">
+    <div class="toolbar">
+      <input type="text" readonly id="zbDate" class="cal-in" onclick="openCal('zbDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadZbPool()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="zbHint"></div>
+    </div>
+    <div class="tbl-wrap" id="zbTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-dtpool">
+    <div class="toolbar">
+      <input type="text" readonly id="dtDate" class="cal-in" onclick="openCal('dtDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadDtPool()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="dtHint"></div>
+    </div>
+    <div class="tbl-wrap" id="dtTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-broken">
+    <div class="toolbar">
+      <input type="text" readonly id="bkDate" class="cal-in" onclick="openCal('bkDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadBroken()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="bkHint"></div>
+    </div>
+    <div class="tbl-wrap" id="bkTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-ladder">
+    <div class="stats" id="ldStats"></div>
+    <div class="ladder" id="ldLadder"></div>
+    <h3 class="sec" id="ldPlateTitle"><i class="bi bi-collection"></i>板块涨停</h3>
+    <div class="tbl-wrap" id="ldPlates" style="max-height:420px"></div>
+  </div>
+
+  <div class="panel" id="pn-hotplate">
+    <div class="tbl-wrap" id="hpTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-flow">
+    <div class="toolbar">
+      <div class="hint" id="flHint">行业板块主力资金流(按主力净流入排序)</div>
+    </div>
+    <div class="tbl-wrap" id="flTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-lhb">
+    <div class="toolbar">
+      <input type="text" readonly id="lhbDate" class="cal-in" onclick="openCal('lhbDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadLhb()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="lhbHint"></div>
+    </div>
+    <div class="tbl-wrap" id="lhbTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-bidding">
+    <div class="stats" id="bdStats"></div>
+    <div class="tbl-wrap" id="bdTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-news">
+    <div class="tbl-wrap" id="nwTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-hotstock">
+    <div class="toolbar">
+      <div class="hint">同花顺热门个股人气榜(小时级热度 · 合并实时行情 · 点击行看K线)</div>
+    </div>
+    <div class="tbl-wrap" id="hsTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-fengkou">
+    <div class="toolbar">
+      <div class="hint">同花顺热门概念板块热度榜 · 最强风口</div>
+    </div>
+    <div class="cards" id="fkCards"></div>
+  </div>
+
+  <div class="panel" id="pn-ztreason">
+    <div class="toolbar">
+      <input type="text" readonly id="zrDate" class="cal-in" onclick="openCal('zrDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadZtReason()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="zrHint"></div>
+    </div>
+    <div class="feed" id="zrGroups"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-ztreview">
+    <div class="toolbar">
+      <input type="text" readonly id="rvDate" class="cal-in" onclick="openCal('rvDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadZtReview()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="rvHint"></div>
+    </div>
+    <div class="stats" id="rvStats"></div>
+    <div class="rv-flex">
+      <div id="rvTimeline"></div>
+      <div id="rvPyramid"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="pn-dragon">
+    <div class="toolbar">
+      <input type="text" readonly id="drDate" class="cal-in" onclick="openCal('drDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadDragon()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="drHint"></div>
+    </div>
+    <div class="stats" id="drStats"></div>
+    <h3 class="sec"><i class="bi bi-arrow-up-circle"></i>晋级(昨日涨停 → 今日继续涨停)</h3>
+    <div class="tbl-wrap" id="drPromote"></div>
+    <h3 class="sec"><i class="bi bi-signpost-split"></i>断板(昨日涨停 → 今日未涨停)</h3>
+    <div class="tbl-wrap" id="drBroken"></div>
+    <h3 class="sec"><i class="bi bi-fire"></i>今日新晋(昨日未涨停)</h3>
+    <div class="tbl-wrap" id="drNew"></div>
+  </div>
+
+  <div class="panel" id="pn-longyi">
+    <div class="toolbar">
+      <input type="text" readonly id="lyDate" class="cal-in" onclick="openCal('lyDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadLongYi()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="lyHint"></div>
+    </div>
+    <div class="cards" id="lyCards"></div>
+    <h3 class="sec"><i class="bi bi-clock-history"></i>首封时间排行(最早涨停)</h3>
+    <div class="tbl-wrap" id="lyFirst"></div>
+    <h3 class="sec"><i class="bi bi-bar-chart-steps"></i>连板高度排行</h3>
+    <div class="tbl-wrap" id="lyTop"></div>
+  </div>
+
+  <div class="panel" id="pn-hotstock">
+    <div class="toolbar">
+      <div class="hint" id="hsHint">同花顺热门个股人气榜</div>
+    </div>
+    <div class="tbl-wrap" id="hsTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-longyi">
+    <div class="toolbar">
+      <input type="text" readonly id="lyDate" class="cal-in" onclick="openCal('lyDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadLongYi()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="lyHint"></div>
+    </div>
+    <div class="cards" id="lyCards"></div>
+    <h3 class="sec"><i class="bi bi-clock-history"></i>首封时间榜(前10)</h3>
+    <div class="tbl-wrap" id="lyFirst" style="max-height:420px"></div>
+    <h3 class="sec"><i class="bi bi-diagram-3"></i>最高板龙头</h3>
+    <div class="tbl-wrap" id="lyTop" style="max-height:420px"></div>
+  </div>
+
+  <div class="panel" id="pn-fengkou">
+    <div class="toolbar">
+      <div class="hint" id="fkHint">同花顺热门概念板块热度榜(最强风口)</div>
+    </div>
+    <div class="cards" id="fkCards"></div>
+  </div>
+
+  <div class="panel" id="pn-ztreason">
+    <div class="toolbar">
+      <input type="text" readonly id="zrDate" class="cal-in" onclick="openCal('zrDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadZtReason()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="zrHint"></div>
+    </div>
+    <div class="zr-groups" id="zrGroups"></div>
+  </div>
+
+  <div class="panel" id="pn-ztreview">
+    <div class="toolbar">
+      <input type="text" readonly id="rvDate" class="cal-in" onclick="openCal('rvDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadZtReview()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="rvHint"></div>
+    </div>
+    <div class="stats" id="rvStats"></div>
+    <div class="rv-flex">
+      <div class="rv-box"><div class="rv-title">涨停时间分布(首封)</div><div id="rvTimeline"></div></div>
+      <div class="rv-box"><div class="rv-title">连板金字塔</div><div id="rvPyramid"></div></div>
+    </div>
+  </div>
+
+  <div class="panel" id="pn-dragon">
+    <div class="toolbar">
+      <input type="text" readonly id="drDate" class="cal-in" onclick="openCal('drDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadDragon()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="drHint"></div>
+    </div>
+    <div class="stats" id="drStats"></div>
+    <h3 class="sec"><i class="bi bi-arrow-up-circle"></i>晋级(昨日涨停今日继续涨停)</h3>
+    <div class="tbl-wrap" id="drPromote" style="max-height:340px"></div>
+    <h3 class="sec"><i class="bi bi-arrow-down-circle"></i>断板(昨日涨停今日未涨停)</h3>
+    <div class="tbl-wrap" id="drBroken" style="max-height:340px"></div>
+    <h3 class="sec"><i class="bi bi-plus-circle"></i>新晋涨停(昨日未涨停)</h3>
+    <div class="tbl-wrap" id="drNew" style="max-height:340px"></div>
+  </div>
+
+  <div class="panel" id="pn-nearzt">
+    <div class="toolbar">
+      <div class="hint" id="nzHint">涨幅7%以上逼近涨停个股(实时)</div>
+    </div>
+    <div class="tbl-wrap" id="nzTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-topiccycle">
+    <div class="toolbar">
+      <div class="hint" id="tcHint">龙虎VIP 题材热度周期表</div>
+    </div>
+    <div class="tc-cols" id="tcCols"></div>
+  </div>
+
+  <div class="panel" id="pn-topictl">
+    <div class="toolbar">
+      <div class="hint" id="ttHint">龙虎VIP 热门题材时间线(点击题材查看详情)</div>
+    </div>
+    <div class="tl-wrap" id="ttWrap"></div>
+  </div>
+
+  <div class="panel" id="pn-panmian">
+    <div class="toolbar">
+      <input type="text" readonly id="pmDate" class="cal-in" onclick="openCal('pmDate')" title="点击选择交易日(周末/节假日不可选)">
+      <button class="btn mini" onclick="loadPanMian()"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="pmHint"></div>
+    </div>
+    <div class="pm-idx" id="pmIdx"></div>
+    <div class="pm-line" id="pmAmt"></div>
+    <div class="pm-line" id="pmUpDown"></div>
+    <div class="pm-hero" id="pmHero"></div>
+    <div class="stats" id="pmStats"></div>
+    <div class="pm-grid">
+      <div class="pm-box">
+        <h3 class="sec"><i class="bi bi-tags"></i>涨停题材TOP6</h3>
+        <div class="pm-reasons" id="pmReasons"></div>
+      </div>
+      <div class="pm-box">
+        <h3 class="sec"><i class="bi bi-diagram-3"></i>龙头梯队</h3>
+        <div class="pm-boards" id="pmBoards"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="pn-flowcn">
+    <div class="toolbar">
+      <div class="hint" id="fcHint">概念板块主力资金流(原开盘啦板块资金轨迹, 数据源: 东方财富)</div>
+    </div>
+    <div class="tbl-wrap" id="fcTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-emxg">
+    <div class="toolbar">
+      <div class="search-wrap" style="min-width:360px">
+        <i class="bi bi-search"></i>
+        <input id="exInput" placeholder="输入选股条件: 涨停 半导体 / 市盈率低于20 / MACD金叉 / 主力净流入最多" autocomplete="off"
+               onkeydown="if(event.key==='Enter')loadEmXuangu()">
+      </div>
+      <button class="btn mini" onclick="loadEmXuangu()"><i class="bi bi-cpu"></i>智能选股</button>
+      <div class="hint" id="exHint">东财智能解析自然语言条件, 支持题材/财务/技术指标</div>
+    </div>
+    <div class="wc-tpl" id="exTpl"></div>
+    <div class="tbl-wrap" id="exTblWrap"><div class="loading">加载中...</div></div>
+  </div>
+
+  <div class="panel" id="pn-wencai">
+    <div class="toolbar">
+      <div class="search-wrap" style="min-width:340px">
+        <i class="bi bi-search"></i>
+        <input id="wcInput" placeholder="输入选股条件: 涨停 光伏 / 创新药 / 中国平安 / 拼音zgpa" autocomplete="off"
+               onkeydown="if(event.key==='Enter')loadWenCai()">
+      </div>
+      <button class="btn mini" onclick="loadWenCai()"><i class="bi bi-search"></i>问财选股</button>
+      <div class="hint" id="wcHint">支持涨停原因题材 / 板块 / 股票名称 / 拼音, 多关键词空格分隔(需同时满足)</div>
+    </div>
+    <div class="wc-tpl" id="wcTpl"></div>
+    <div class="tbl-wrap" id="wcTblWrap"></div>
+  </div>
+
+  <div class="panel" id="pn-themeinv">
+    <div class="toolbar">
+      <div class="hint" id="tiHint">题材投资系统(题材机会聚合)</div>
+    </div>
+    <h3 class="sec"><i class="bi bi-fire"></i>热门题材(龙虎VIP)</h3>
+    <div class="ti-topics" id="tiTopics"></div>
+    <h3 class="sec"><i class="bi bi-cash-stack"></i>题材投资机会(概念板块资金+涨停家数)</h3>
+    <div class="tbl-wrap" id="tiTblWrap" style="max-height:520px"></div>
+  </div>
+
+  <div class="panel" id="pn-market">
+    <div class="toolbar">
+      <select id="mkSort">
+        <option value="f3">涨幅</option>
+        <option value="f62">主力净流入</option>
+        <option value="f6">成交额</option>
+        <option value="f8">换手率</option>
+        <option value="f10">量比</option>
+        <option value="f20">总市值</option>
+      </select>
+      <button class="btn mini" onclick="mkPage(0)"><i class="bi bi-search"></i>查询</button>
+      <div class="hint" id="mkHint"></div>
+    </div>
+    <div class="tbl-wrap" id="mkTblWrap"><div class="loading">加载中...</div></div>
+    <div class="pager">
+      <button class="btn mini" id="mkPrev" onclick="mkPage(-1)"><i class="bi bi-chevron-left"></i>上一页</button>
+      <span id="mkPageInfo">-</span>
+      <input id="mkJump" placeholder="页码" onkeydown="if(event.key==='Enter')mkJump()">
+      <button class="btn mini" onclick="mkJump()">跳转</button>
+      <button class="btn mini" id="mkNext" onclick="mkPage(1)">下一页<i class="bi bi-chevron-right"></i></button>
+    </div>
+  </div>
+
+  <div class="foot">数据来源: 腾讯行情 · 东方财富 · 同花顺 · 选股宝 · 财联社 · 短线侠 · 堆书 | 点击任意股票行可查看K线 | 仅供学习研究</div>
+</main>
+
+<!-- K线弹窗 -->
+<div class="mask" id="kMask" onclick="if(event.target===this)closeKline()">
+  <div class="kmodal">
+    <div class="m-head">
+      <span class="nm" id="kName">--</span>
+      <span class="cd" id="kCode">--</span>
+      <span class="pr flat" id="kPrice">--</span>
+      <span class="pr flat" id="kPct">--</span>
+      <span class="sp"></span>
+      <button class="btn mini chip-toggle" id="kChipBtn" onclick="toggleChips()" title="显示筹码分布"><i class="bi bi-bar-chart-steps"></i>筹码</button>
+      <button class="close" onclick="closeKline()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="m-quote" id="kQuote"></div>
+    <div class="m-period" id="kPeriod"></div>
+    <div class="k-flex">
+      <div id="kChart"><div class="loading">加载中...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 分时图弹窗(双击日K打开) -->
+<div class="mask" id="mMask" onclick="if(event.target===this)closeMinute()">
+  <div class="kmodal m-small">
+    <div class="m-head">
+      <span class="nm" id="mName">--</span>
+      <span class="cd" id="mDate">--</span>
+      <span class="sp"></span>
+      <button class="close" onclick="closeMinute()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div id="mChart"><div class="loading">加载中...</div></div>
+  </div>
+</div>
+
+<!-- 题材详情弹窗 -->
+<div class="mask" id="tpMask" onclick="if(event.target===this)closeTopic()">
+  <div class="kmodal m-small" style="max-width:760px">
+    <div class="m-head">
+      <span class="nm" id="tpTitle">--</span>
+      <span class="sp"></span>
+      <button class="close" onclick="closeTopic()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div id="tpBody" class="tp-body">加载中...</div>
+  </div>
+</div>
+
+<!-- 交易日历选择器 -->
+<div class="mask" id="calMask" onclick="if(event.target===this)closeCal()">
+  <div class="cal-pop">
+    <div class="cal-head">
+      <button class="btn mini" onclick="calMonth(-12)" title="上一年"><i class="bi bi-chevron-double-left"></i></button>
+      <button class="btn mini" onclick="calMonth(-1)" title="上一月"><i class="bi bi-chevron-left"></i></button>
+      <span class="cal-title" id="calTitle">--</span>
+      <button class="btn mini" onclick="calMonth(1)" title="下一月"><i class="bi bi-chevron-right"></i></button>
+      <button class="btn mini" onclick="calMonth(12)" title="下一年"><i class="bi bi-chevron-double-right"></i></button>
+      <button class="btn mini" onclick="calLatest()"><i class="bi bi-bullseye"></i>最新交易日</button>
+    </div>
+    <div class="cal-week">
+      <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span class="we">六</span><span class="we">日</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <span class="lg"><i class="dot ok"></i>交易日</span>
+      <span class="lg"><i class="dot off"></i>周末/节假日</span>
+      <span class="lg"><i class="dot make"></i>调休补班</span>
+    </div>
+  </div>
+</div>
+
+<script src="static/vendor/jquery.min.js?v=3"></script>
+<script src="static/vendor/bootstrap.bundle.min.js?v=3"></script>
+<script src="static/echarts.min.js?v=3"></script>
+<script src="static/js/utils.js?v=3"></script>
+<script src="static/js/panels.js?v=3"></script>
+<script src="static/js/kline.js?v=3"></script>
+<script src="static/js/calendar.js?v=3"></script>
+<script src="static/js/watchlist.js?v=3"></script>
+<script src="static/js/main.js?v=3"></script>
+</body>
+</html>

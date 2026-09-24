@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A股选股 Agent</title>
+<link rel="stylesheet" href="static/app.css">
+</head>
+<body>
+<header>
+  <div class="logo">A股选股 Agent</div>
+  <div class="clock" id="clock">--</div>
+  <div class="status" id="hAst">astock: 检测中</div>
+  <div class="status" id="hLlm">LLM: 检测中</div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-p="pn-modes" class="active">模式管理</button>
+  <button data-p="pn-confirm">学习确认</button>
+  <button data-p="pn-run">选股运行</button>
+  <button data-p="pn-history">历史记录</button>
+</nav>
+
+<main>
+  <!-- ================= 模式管理 ================= -->
+  <div class="panel active" id="pn-modes">
+    <div class="toolbar">
+      <input id="newModeName" placeholder="新模式名，如：模式2_涨停回马枪" style="width:260px">
+      <button class="btn" onclick="createMode()">新建模式</button>
+      <div class="hint">案例库约定：每套模式一个文件夹；每个案例一个子文件夹（截图任意多张 + 说明.md）</div>
+    </div>
+    <div class="cols">
+      <div class="col-left">
+        <div id="modeList"><div class="empty">加载中...</div></div>
+      </div>
+      <div class="col-right">
+        <div class="toolbar">
+          <b class="sec" id="selModeName" style="font-size:15px;color:var(--yellow)">未选择模式</b>
+          <button class="btn" id="btnLearn" onclick="startLearn()" disabled>学习规则</button>
+          <button class="btn del" id="btnDelMode" onclick="delMode()" disabled>删除模式</button>
+          <div class="hint" id="modeStatusHint"></div>
+        </div>
+
+        <div id="learnProgress" style="display:none">
+          <div class="progress"><div class="bar" id="learnBar"></div></div>
+          <div class="p-label" id="learnStage">准备中</div>
+          <div class="feed" id="learnLog" style="max-height:180px"></div>
+        </div>
+
+        <div class="upload-box" id="dropBox">
+          <div class="up-main">
+            <span class="up-title">新增案例（拖拽截图到此处，或点击选择图片）</span>
+            <input type="file" id="caseFiles" multiple accept=".png,.jpg,.jpeg,.gif,.webp" hidden>
+          </div>
+          <div class="up-fields">
+            <input id="caseName" placeholder="案例名（如 案例01_20260820低吸点）" style="flex:1">
+            <textarea id="caseDesc" rows="3" placeholder="说明.md 内容：条件清单 / 叙事复盘均可，风格不限"></textarea>
+          </div>
+          <div class="up-foot">
+            <span class="hint" id="fileHint">未选择文件</span>
+            <button class="btn on" onclick="uploadCase()">上传案例</button>
+          </div>
+        </div>
+
+        <h3 class="sec">案例列表（点击案例名查看截图）</h3>
+        <div id="caseList"><div class="empty">请先选择模式</div></div>
+        <div id="imgPreview" class="img-preview" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 学习确认 ================= -->
+  <div class="panel" id="pn-confirm">
+    <div class="toolbar">
+      <select id="cfMode" style="min-width:220px"></select>
+      <button class="btn" onclick="loadDraft()">加载草案</button>
+      <div class="hint" id="cfHint">学习完成后草案出现在这里：审查条件 → 增删改 → 确认保存为正式规则</div>
+    </div>
+    <div id="cfBody"><div class="empty">选择模式后点击「加载草案」</div></div>
+  </div>
+
+  <!-- ================= 选股运行 ================= -->
+  <div class="panel" id="pn-run">
+    <div class="toolbar">
+      <select id="runMode" style="min-width:220px"></select>
+      <button class="btn on" id="btnRun" onclick="startRun()" disabled>开始选股</button>
+      <div class="hint" id="runHint">手动触发，每次运行一套模式：东财智能选股分条查询 → 取交集 → 数据工具逐只验证</div>
+    </div>
+    <div id="runProgress" style="display:none">
+      <div class="progress"><div class="bar" id="runBar"></div></div>
+      <div class="p-label" id="runStage">准备中</div>
+      <div class="feed" id="runLog" style="max-height:220px"></div>
+    </div>
+    <div id="runResult"></div>
+  </div>
+
+  <!-- ================= 历史记录 ================= -->
+  <div class="panel" id="pn-history">
+    <div class="toolbar">
+      <button class="btn" onclick="loadRuns()">刷新列表</button>
+      <div class="hint">历次运行结果存档于 runs/ 目录</div>
+    </div>
+    <div id="runTblWrap"><div class="empty">加载中...</div></div>
+    <div id="runDetail"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+<script src="static/app.js"></script>
+</body>
+</html>

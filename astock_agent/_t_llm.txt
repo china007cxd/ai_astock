@@ -1,0 +1,193 @@
+<attached_files>
+
+<code_selection path="C:\Users\wskj\.qoder\shared_client\cache\plans\astock选股agent方案_218eb55f.md" lines="1-183">
+     1→# astock_agent 选股 Agent 方案
+     2→
+     3→## 一、需求理解（已与用户逐条确认）
+     4→
+     5→| 维度 | 确认结论 |
+     6→|---|---|
+     7→| 案例形式 | 截图+文字都有，形态与数值条件都重要 |
+     8→| 看图时机 | 仅学习案例时看图一次，运行时不做图形判断 |
+     9→| 案例规模 | 3-5 套模式，每套 5-20 个案例，持续增量更新 |
+    10→| 数据维度 | K线+技术指标、筹码分布、板块/概念、资金流 |
+    11→| 筛选方式 | 工具查询（东财智能选股 em_xuangu + 现有本地 wencai），手动触发，每次跑一套模式 |
+    12→| 模式复杂度 | 混合型（单条件一步查询 / 多条件组合验证） |
+    13→| 案例写法 | 混合风格（条件清单 + 叙事复盘 + 截图标注） |
+    14→| 输出 | 候选列表 + 每只股票命中条件说明（人工最终决策） |
+    15→| 交互 | Web 界面 |
+    16→| 看图方案 | DeepSeek 官方视觉模型 deepseek-v4-flash-vision-exp |
+    17→| 问财接口 | 现有接口就够（暂不接真问财 pywencai，留扩展位） |
+    18→| 学习产物 | 先展示「我理解的模式逻辑」→ 用户审查修改 → 保存为规则 |
+    19→| 多条件执行 | 分条查询取交集 |
+    20→| 增量学习 | 新案例持续加入，重新提炼，展示 diff，确认后更新规则 |
+    21→
+    22→## 二、核心结论：不建 RAG，不做 Skill
+    23→
+    24→**为什么不建 RAG 向量库**：RAG 解决的是「大量文档中语义检索」问题。你的案例规模中等（几十~百级）、且学习一次后提炼成结构化规则即可，运行时不需要每次检索原始案例。硬上 RAG 只会增加复杂度（embedding、向量库、检索调优）。
+    25→- 预留演进点：若将来案例超过几百个、需要「新案例自动匹配相似旧案例做参考」，再引入轻量向量索引（ChromaDB），v1 不做。
+    26→
+    27→**为什么不做 Skill**：Skill 是静态提示词/流程文件，无法承载「从案例学习」和「数据工具执行」。你的选股逻辑应存储为**结构化规则文件（YAML）**——这是数据，不是技能。Qoder 的 skill 机制是给 Qoder 用的，与运行时 agent 无关。
+    28→
+    29→**正确架构**：`案例库(文件夹) → 离线学习管线(视觉+文本LLM提炼规则) → 人审确认 → 规则库(YAML) → 运行时引擎(LangGraph+工具执行) → Web 结果页`
+    30→
+    31→## 三、总体架构（两进程）
+    32→
+    33→```
+    34→┌─────────────────────────────────────────────────────┐
+    35→│ astock (已有，端口8765，先启动)                        │
+    36→│  东财智能选股/问财/K线/筹码/板块/资金流等 20+ HTTP端点   │
+    37→└──────────────────────┬──────────────────────────────┘
+    38→                       │ HTTP 调用（不 import，避免相对路径坑）
+    39→┌──────────────────────┴──────────────────────────────┐
+    40→│ astock_agent (新建，端口8766)                         │
+    41→│  ┌────────────┐  ┌────────────┐  ┌───────────────┐  │
+    42→│  │ 学习管线    │→ │ 规则库      │→ │ 运行引擎       │  │
+    43→│  │ 截图→视觉LLM │  │ rules/*.yaml│  │ LangGraph+工具 │  │
+    44→│  │ 文字→文本LLM │  │ (人审确认)  │  │ 分条查询取交集  │  │
+    45→│  └────────────┘  └────────────┘  └───────────────┘  │
+    46→│  FastAPI + Web 前端（模式管理/学习确认/选股运行/历史）   │
+    47→└─────────────────────────────────────────────────────┘
+    48→```
+    49→
+    50→## 四、目录结构（astock_agent/）
+    51→
+    52→```
+    53→astock_agent/
+    54→├── pyproject.toml            # uv 管理，包名 astock-agent，src 布局
+    55→├── .env / .env.example       # DEEPSEEK_API_KEY、模型名、ASTOCK_BASE=http://127.0.0.1:8765
+    56→├── cases/                    # ★案例库（用户维护）
+    57→│   └── 模式1_MACD金叉/
+    58→│       ├── 案例01_某票/
+    59→│       │   ├── 截图1.png     # 可多张，PNG/JPG
+    60→│       │   └── 说明.md       # 文字描述（条件清单/叙事复盘均可）
+    61→│       └── 案例02_某票/
+    62→├── rules/                    # ★学习产物（人审后保存）
+    63→│   └── 模式1_MACD金叉.yaml
+    64→├── runs/                     # 每次运行结果存档 runs/2026-08-24_mode1.json
+    65→├── src/astock_agent/
+    66→│   ├── main.py               # FastAPI 入口（端口8766）
+    67→│   ├── config.py             # .env 读取
+    68→│   ├── llm.py                # DeepSeek 客户端（chat + vision 两模型）
+    69→│   ├── astock_client.py      # astock HTTP API 客户端（httpx）
+    70→│   ├── models.py             # Pydantic: Case/Rule/Condition/RunResult
+    71→│   ├── tools.py              # LangChain @tool 封装（见工具层）
+    72→│   ├── indicators.py         # pandas/numpy 指标计算库（MACD/MA/KDJ/量比/筹码集中度）
+    73→│   ├── learn/
+    74→│   │   ├── vision.py         # 截图 → 视觉模型 → 结构化解读JSON
+    75→│   │   ├── extract.py        # 多案例 → 文本模型 → 规则草案
+    76→│   │   └── diff.py           # 增量学习：新草案 vs 已存规则的 diff
+    77→│   ├── engine.py             # LangGraph 运行引擎
+    78→│   └── storage.py            # cases/rules/runs 读写
+    79→└── web/                      # 前端（深色单页，参照 astock 风格）
+    80→    └── index.html + app.css + app.js
+    81→```
+    82→
+    83→## 五、案例库约定（给用户）
+    84→
+    85→- 每套模式一个文件夹，文件夹名即模式名（如 `模式1_MACD金叉`）
+    86→- 每个案例一个子文件夹：截图随意命名多张，文字放 `说明.md`
+    87→- 说明.md 风格不限（条件清单/叙事复盘/截图有标注），学习管线都能处理
+    88→- 新增案例：直接把新案例文件夹丢进对应模式文件夹 → Web 点「重新学习」
+    89→
+    90→## 六、规则 Schema（学习产物，人审对象）
+    91→
+    92→```yaml
+    93→mode_id: mode_1
+    94→name: MACD金叉启动
+    95→description: 日线MACD金叉 + 主力净流入为正 + 板块为当日热点 + 筹码低位密集
+    96→combine: intersection          # 用户确认：分条查询取交集
+    97→conditions:
+    98→  - id: c1
+    99→    text: 日线MACD金叉
+   100→    type: query                # query = 东财智能选股自然语言查询
+   101→    query: "MACD金叉"
+   102→  - id: c2
+   103→    text: 主力净流入为正
+   104→    type: query
+   105→    query: "主力净流入大于0"
+   106→  - id: c3
+   107→    text: 所属板块为当日热门概念
+   108→    type: verify               # verify = 数据工具逐只验证
+   109→    compute: in_hot_plate
+   110→    params: {top_n: 20}
+   111→  - id: c4
+   112→    text: 筹码低位密集(90%成本集中度<15%)
+   113→    type: verify
+   114→    compute: chips_concentration_lt
+   115→    params: {threshold: 15}
+   116→verified_at: "2026-08-24"
+   117→case_count: 8
+   118→```
+   119→
+   120→说明：`combine` 字段预留 union/sequence 扩展位；`compute` 对应引擎内置校验函数库，v1 先实现常用函数，后续按需扩展。
+   121→
+   122→## 七、学习管线（离线，含人审）
+   123→
+   124→1. 用户组织案例到 cases/模式X/，Web「模式管理」点「学习」
+   125→2. **截图解读**：每张截图 base64 → deepseek-v4-flash-vision-exp，提示词要求输出结构化 JSON（K线形态、均线/指标状态、量价关系、图中标注文字、筹码/资金面板信息、形态判断），明确「只描述图中可见，不推测图外信息」
+   126→3. **规则提炼**：该模式全部案例的 说明.md + 截图解读 → deepseek-chat，提示词要求输出：条件清单（每条一句话）、每条条件的执行方式（能用东财查询的给查询语句 / 需验证的给验证方法）、每条条件的案例证据、置信度
+   127→4. **人审确认**：Web「学习确认」页展示草案（条件列表+证据来源）→ 用户增删改条件、修改查询语句 → 保存 rules/模式X.yaml
+   128→5. **增量学习**：新案例加入后「重新学习」→ 新草案与已存规则 diff → 展示新增/修改/删除的条件及新案例支持度 → 用户确认合并
+   129→
+   130→## 八、工具层（LangChain @tool，全部 HTTP 调 astock）
+   131→
+   132→| 工具 | 数据源（astock 端点） | 用途 |
+   133→|---|---|---|
+   134→| em_xuangu(query, size) | /api/em_xuangu | 执行 query 型条件（真实NL解析） |
+   135→| wencai(query, size) | /api/wencai | 备选查询（本地匹配） |
+   136→| get_kline(code, count=320) | /api/kline（前复权） | 本地计算 MA/MACD/KDJ/量比/涨幅，支撑 verify |
+   137→| get_chips(code) | /api/chips | 筹码验证（获利比例/90%成本集中度） |
+   138→| get_hot_plates() | /api/fengkou | 热门板块验证 |
+   139→| get_plate_flow() | /api/plate_flow | 板块资金验证 |
+   140→| get_quotes(codes) | /api/quotes | 结果页实时行情补充 |
+   141→| get_stock_boards(code) | ★开发时核对 astock 是否具备，缺则在 astock 补端点或 agent 内直连东财 | 个股所属板块验证 |
+   142→
+   143→内置校验函数库（indicators.py，供 verify 条件调用）：macd_gold_cross、ma_bull_alignment、price_above_ma(n)、liangbi_gt(x)、pct_gain_range、new_high_n_days、vol_shrink_break、chips_concentration_lt(x)、profit_ratio_lt(x)、in_hot_plate(top_n)、in_plate_flow_top(n)、main_net_gt(0) 等。每工具带清晰 docstring 与参数 schema。
+   144→
+   145→## 九、运行引擎（LangGraph，确定性执行+LLM生成解读）
+   146→
+   147→节点流程：load_rule → query_conditions（并行执行所有 query 条件）→ intersect（取交集）→ verify_conditions（对候选池逐只跑 verify）→ summarize（LLM 生成每只股票命中说明）→ save_report。
+   148→- **不是自由 ReAct**：查询语句来自规则而非现场生成，保证可复现、低成本；LLM 只在结果解读阶段使用
+   149→- 交集为空：提前终止，返回各条件各自命中数，提示「可放宽哪条条件」
+   150→- 单工具失败：重试1次，仍失败标注「该条件未验证」继续
+   151→- 结果：每只股票 + 命中的条件标签 + 一句话说明，存档 runs/*.json
+   152→
+   153→## 十、Web 界面（深色风格参照 astock，端口8766）
+   154→
+   155→1. **模式管理**：模式列表（新建/学习/重新学习/删除）、案例上传（拖拽截图+说明.md，自动按模式归档）
+   156→2. **学习确认**：规则草案编辑器（条件增删改、查询语句修改、证据展示）
+   157→3. **选股运行**：选模式 → 运行 → 进度展示 → 结果表格（代码/名称/现价/涨幅/命中条件标签/说明）
+   158→4. **历史记录**：历次运行结果查看
+   159→
+   160→## 十一、技术选型
+   161→
+   162→- Python 3.10+，uv 管理依赖；包结构用 src 布局（注意：不要留空的 src/ 目录，uv 会误判布局导致 sync 失败）
+   163→- 依赖：fastapi、uvicorn、httpx、langchain-core、langchain-openai、langgraph、openai、pyyaml、python-dotenv、pandas、numpy、pydantic
+   164→- 模型：文本 deepseek-chat（OpenAI 兼容 base_url=https://api.deepseek.com），视觉 deepseek-v4-flash-vision-exp（base64 内联传图，图片 JPEG/PNG）
+   165→- 存储：纯文件（cases/ 目录 + rules/*.yaml + runs/*.json），不上数据库
+   166→- astock 集成：仅 HTTP 调用（先启动 astock 的 启动.bat），不 import astock.server（避免相对路径依赖启动目录的坑）
+   167→
+   168→## 十二、开发阶段（用户逐步指挥 Qoder 执行）
+   169→
+   170→- 阶段A 骨架：uv init astock_agent、装依赖、config/llm/astock_client、FastAPI 空服务 + 健康检查（含 astock 连通性自检）
+   171→- 阶段B 工具层：tools.py 封装 8 个工具 + indicators.py 指标库 + 自检脚本逐一跑通
+   172→- 阶段C 学习管线：案例读取 → vision.py 截图解读 → extract.py 规则提炼 → 人审保存（先 CLI 脚本验证效果）
+   173→- 阶段D 运行引擎：engine.py LangGraph 流程 + 校验函数库 + 空集处理
+   174→- 阶段E Web 前端：四页面 + 后端 REST 接口对接
+   175→- 阶段F 打磨：增量学习 diff、错误重试、日志、README、启动脚本（先 astock 后 agent 的一键启动 bat）
+   176→
+   177→## 十三、风险与注意点
+   178→
+   179→1. deepseek-v4-flash-vision-exp 是实验模型，K线截图解读效果需用真实案例实测调优提示词（要求结构化 JSON 输出）
+   180→2. 东财智能选股对复杂语句解析能力有限：规则里查询语句保持简洁，失败自动回退 wencai 并标注
+   181→3. 分条查询取交集可能过严产生空集：结果页必须展示各条件命中数，提示放宽方向
+   182→4. 「个股所属板块」「个股资金流」两个数据点在开发阶段B需核对 astock 现有端点，缺则补充
+   183→5. 用户需准备：DeepSeek API Key + 一套真实模式的 2-3 个案例（截图+说明.md）用于联调验收
+</code_selection>
+
+</attached_files>
+
+<system_reminder>You have now exited plan mode. Continue with the task in the new mode.</system_reminder>
+<user_query>Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.</user_query>
+openai 3.x 在 key 为空时会抛 `Missing credentials`，需要更友好的处理。修复 llm.py：

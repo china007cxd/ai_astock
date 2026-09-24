@@ -1,0 +1,19 @@
+mode_id: 模式1
+name: 模式1-MACD金叉超跌反弹
+description: MACD金叉 + 3个月内从最高点回落超30%的买点模式。澜起科技(688008)经典案例：从最高332.51跌至208.36，跌幅37.3%，叠加MACD金叉触发买入信号。
+combine: intersection
+conditions:
+- id: c1
+  text: 日线MACD金叉
+  type: query
+  query: MACD金叉
+- id: c2
+  text: 近90日内从最高点回落超30%
+  type: verify
+  compute: drop_from_high
+  params:
+    days: 90
+    pct: 30
+verified_at: '2026-08-24 23:04:11'
+case_count: 1
+notes: 澜起科技(688008)案例：最高332.51→208.36，跌幅37.3%，叠加MACD金叉形成买点。查询条件先用东财智能选股筛出MACD金叉的股票池，再用验证条件逐只检查是否从90日高点回落超30%。

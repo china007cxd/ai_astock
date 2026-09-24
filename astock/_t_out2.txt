@@ -1,0 +1,3 @@
+translates: 
+date text around:
+ect width="1100" height="620" x="0" y="0" fill="none"></rect> <text dominant-baseline="central" text-anchor="start" style="font: 10px sans-serif" y="5" transform="translate(1032.6 33)" fill="#8b93a1">2026-08-24</text> <text dominant-baseline="central" text-anchor="start" style="f
