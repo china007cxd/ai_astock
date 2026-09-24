@@ -1,0 +1,20 @@
+{
+  "implemented": {
+    "market_review": ["DiskReview", "ChangeStatistics", "RiseFallAnalysis", "MarketSCLN"],
+    "limit_review": ["DailyLimitPerformance", "HisDaBanList", "GetPlateInfo", "KLineZhangTingReason"],
+    "auction_anomaly": ["MorningBiddingList", "Radar", "GetBKJJ_w36", "GetFengKListBest", "GetWPQC"],
+    "sector_theme": ["RealRankingInfo", "ZhiShuStockList_W8", "SonPlate_Info", "InfoList", "GetPoint"],
+    "stock": ["quote", "minute", "kline", "fund_flow", "watchlist", "indicators"],
+    "intelligence": ["LongHuBang.GetStockList", "news", "events", "live"],
+    "screener": ["eastmoney_smart_search", "local_filters"],
+    "export": ["csv", "xlsx"],
+    "compatibility": ["/compat/w1/api/index.php", "/w1/api/index.php"]
+  },
+  "excluded_by_requirement": [
+    "license_and_heartbeat",
+    "author_private_ai_and_fund_track_services",
+    "tongdaxin_and_windows_process_linkage",
+    "desktop_notifications",
+    "original_exe_updater"
+  ]
+}
