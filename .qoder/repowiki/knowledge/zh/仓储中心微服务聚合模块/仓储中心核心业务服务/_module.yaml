@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: storage_provider
+title: 仓储中心核心业务服务
+scope:
+    - guoke-deepexi-storage-center-provider/
+source_files: []
+depends_on: []
+related_to: []
